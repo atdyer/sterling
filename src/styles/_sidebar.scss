@@ -1,0 +1,92 @@
+@import '~@blueprintjs/core/lib/scss/variables';
+@import 'variables';
+
+.sterling-sidebar {
+
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  height: 100%;
+  min-width: $sidebar-min-width;
+  max-width: $sidebar-max-width;
+  font-size: 12px;
+  background-color: $pt-dark-app-background-color;
+  box-shadow: $pt-dark-elevation-shadow-1;
+
+  &.collapsed {
+    min-width: 0;
+    > * {
+      padding: 7px !important;
+    }
+  }
+
+  &.left {
+    border-right: 1px solid rgba($black, $pt-dark-drop-shadow-opacity);
+  }
+
+  &.right {
+    border-left: 1px solid rgba($black, $pt-dark-drop-shadow-opacity);
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 14px;
+    color: $pt-dark-heading-color;
+    border-bottom: 1px solid $pt-dark-divider-white;
+    .title {
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+  }
+
+  .section {
+    display: flex;
+    flex-direction: column;
+
+    &.collapsed {
+      border-bottom: 1px solid $pt-dark-divider-white;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 14px;
+      color: $pt-dark-heading-color;
+
+      .title {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+      }
+
+    }
+
+    .section-body {
+      display: flex;
+      flex-direction: column;
+      padding: 7px 21px;
+
+      .bp3-form-group.bp3-inline {
+        justify-content: space-between;
+      }
+    }
+  }
+
+  .bp3-button-text {
+    font-size: 12px;
+  }
+
+  .bp3-multi-select {
+    input.bp3-input-ghost {
+      opacity: 1;
+      position: relative;
+    }
+  }
+
+}
+
+.bp3-menu-header {
+  min-width: $sidebar-min-width - 62px;
+}
