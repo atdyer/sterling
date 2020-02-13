@@ -1,7 +1,9 @@
 import { CircleLayout, Edge, Graph, Node } from '@atdyer/graph-js';
 import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
+import SplitPane from 'react-split-pane';
 import { ISterlingViewProps } from '../../sterling/SterlingTypes';
+import { Evaluator } from '../evaluator/Evaluator';
 import GraphViewSidebar from './GraphViewSidebar';
 import GraphViewStage from './GraphViewStage';
 
@@ -10,7 +12,10 @@ export interface IGraphViewProps extends ISterlingViewProps {
 }
 
 export interface IGraphViewState {
+    collapseSidebar: boolean
+    evaluator: Evaluator
     graph: Graph
+    sidebarView: 'settings' | 'evaluator'
 }
 
 class GraphView extends React.Component<IGraphViewProps, IGraphViewState> {
@@ -57,7 +62,10 @@ class GraphView extends React.Component<IGraphViewProps, IGraphViewState> {
         }
 
         this.state = {
-            graph: graph
+            collapseSidebar: false,
+            evaluator: new Evaluator(props.connection),
+            graph: graph,
+            sidebarView: 'settings'
         };
 
     }
@@ -104,8 +112,14 @@ class GraphView extends React.Component<IGraphViewProps, IGraphViewState> {
         const state = this.state;
         const visible = this.props.visible;
 
+        if (!visible) return null;
+
         const sidebar = (
-            <GraphViewSidebar {...state}/>
+            <GraphViewSidebar
+                {...state}
+                onRequestSidebarView={this._onRequestSidebarView}
+                onToggleCollapseSidebar={this._onToggleCollapseSidebar}
+            />
         );
 
         const stage = (
@@ -115,9 +129,36 @@ class GraphView extends React.Component<IGraphViewProps, IGraphViewState> {
         );
 
         return (
-            <>{sidebar}{stage}</>
+            state.collapseSidebar
+                ? (<>{sidebar}{stage}</>)
+                : <SplitPane split={'vertical'}
+                             defaultSize={350}
+                             minSize={300}
+                             maxSize={550}
+                             onChange={this._onResizeSidebar}
+                             onDragFinished={this._onResizeSidebar}>
+                    {sidebar}
+                    {stage}
+                </SplitPane>
         );
 
+    }
+
+    private _onResizeSidebar = (): void => {
+        if (this.state.graph) {
+            this.state.graph.resize();
+        }
+    };
+
+    private _onRequestSidebarView = (view: 'settings' | 'evaluator'): void => {
+        this.setState({
+            sidebarView: view
+        });
+    };
+
+    private _onToggleCollapseSidebar = (): void => {
+        const curr = this.state.collapseSidebar;
+        this.setState({collapseSidebar: !curr});
     }
 
 }

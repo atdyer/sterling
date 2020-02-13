@@ -1,0 +1,52 @@
+@import "~@blueprintjs/core/lib/scss/variables";
+
+.eval {
+
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  max-height: 100%;
+  overflow-y: hidden;
+
+  .eval-output {
+    overflow-y: auto;
+    height: calc(100% - 200px);
+    padding: 1em;
+    > div {
+      font-family: 'Fira Code', monospace;
+      font-size: 12px;
+      margin-bottom: 1em;
+    }
+    .bp3-callout {
+      line-height: 1.25;
+      .bp3-heading {
+        font-size: 14px;
+        padding-bottom: 0.2em;
+      }
+      .bp3-icon {
+        top: 14px;
+        left: 14px;
+      }
+    }
+  }
+
+  .eval-input {
+    min-height: 200px;
+    display: flex;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    textarea {
+      flex: 1 0 auto;
+      min-height: 125px;
+      resize: none;
+      outline: none;
+      padding: 0.75em;
+      overflow-wrap: break-word;
+      background: rgba(16,22,26,.3);
+      color: $pt-dark-text-color;
+      border: none;
+      box-shadow: $pt-dark-input-box-shadow;
+    }
+  }
+
+}

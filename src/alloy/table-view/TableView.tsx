@@ -1,5 +1,6 @@
 import { AlloyInstance, AlloySkolem, filtering, sorting } from 'alloy-ts';
 import React from 'react';
+import SplitPane from 'react-split-pane';
 import {
     AlloyNameFn,
     HorizontalAlignment, ISterlingViewProps,
@@ -8,33 +9,35 @@ import {
     TableSortFunction,
     TablesType
 } from '../../sterling/SterlingTypes';
+import { Evaluator } from '../evaluator/Evaluator';
 import { nameFunction } from './TableUtil';
 import TableViewSidebar from './TableViewSidebar';
 import TableViewStage from './TableViewStage';
 
 export interface ITableViewProps extends ISterlingViewProps {
-    data: AlloyInstance | null,
-    visible: boolean
+    data: AlloyInstance | null
 }
 
 export interface ITableViewState {
-    collapseData: boolean,
-    collapseLayout: boolean,
-    collapseSidebar: boolean,
-    collapseSkolem: boolean,
-    collapseTables: boolean,
-    highlightSkolems: boolean,
-    items: SigFieldSkolem[],
-    itemsSelected: SigFieldSkolem[],
-    layoutDirection: LayoutDirection,
-    nameFunction: AlloyNameFn,
-    removeBuiltin: boolean,
-    removeEmpty: boolean,
-    removeThis: boolean,
-    skolemColors: Map<AlloySkolem, string>,
-    sortPrimary: TableSortFunction,
-    sortSecondary: TableSortFunction,
-    tableAlignment: HorizontalAlignment,
+    collapseData: boolean
+    collapseLayout: boolean
+    collapseSidebar: boolean
+    collapseSkolem: boolean
+    collapseTables: boolean
+    evaluator: Evaluator
+    highlightSkolems: boolean
+    items: SigFieldSkolem[]
+    itemsSelected: SigFieldSkolem[]
+    layoutDirection: LayoutDirection
+    nameFunction: AlloyNameFn
+    removeBuiltin: boolean
+    removeEmpty: boolean
+    removeThis: boolean
+    sidebarView: 'settings' | 'evaluator'
+    skolemColors: Map<AlloySkolem, string>
+    sortPrimary: TableSortFunction
+    sortSecondary: TableSortFunction
+    tableAlignment: HorizontalAlignment
     tables: TablesType
 }
 
@@ -53,6 +56,7 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
             collapseSidebar: false,
             collapseSkolem: false,
             collapseTables: false,
+            evaluator: new Evaluator(props.connection),
             highlightSkolems: true,
             items: [],
             itemsSelected: [],
@@ -61,6 +65,7 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
             removeBuiltin: true,
             removeEmpty: true,
             removeThis: true,
+            sidebarView: 'evaluator',
             skolemColors: sH,
             sortPrimary: sorting.groupSort(),
             sortSecondary: sorting.sizeSort(),
@@ -160,6 +165,7 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
                 onChooseTableAlignment={this._onChooseTableAlignment}
                 onChooseTablesType={this._onChooseTablesType}
                 onItemsSelected={this._onItemsSelected}
+                onRequestSidebarView={this._onRequestSidebarView}
                 onToggleBuiltin={this._onToggleBuiltin}
                 onToggleCollapseData={this._onToggleCollapseData}
                 onToggleCollapseLayout={this._onToggleCollapseLayout}
@@ -173,7 +179,16 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
         );
 
         return (
-            <>{sidebar}{stage}</>
+            state.collapseSidebar
+                ? (<>{sidebar}{stage}</>)
+                : <SplitPane pane2Style={{display: 'flex'}}
+                             split={'vertical'}
+                             defaultSize={350}
+                             minSize={300}
+                             maxSize={550}>
+                    {sidebar}
+                    {stage}
+            </SplitPane>
         );
 
     }
@@ -241,7 +256,13 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
     private _onItemsSelected = (items: SigFieldSkolem[]): void => {
         this.setState({itemsSelected: items, tables: TablesType.Select});
     };
-    
+
+    private _onRequestSidebarView = (view: 'settings' | 'evaluator'): void => {
+        this.setState({
+            sidebarView: view
+        });
+    };
+
     private _onToggleBuiltin = (): void => {
         this.setState({removeBuiltin: !this.state.removeBuiltin});
     };

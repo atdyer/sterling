@@ -7,14 +7,11 @@
   flex-direction: column;
   flex: 0 1 auto;
   height: 100%;
-  min-width: $sidebar-min-width;
-  max-width: $sidebar-max-width;
   font-size: 12px;
   background-color: $pt-dark-app-background-color;
   box-shadow: $pt-dark-elevation-shadow-1;
 
   &.collapsed {
-    min-width: 0;
     > * {
       padding: 7px !important;
     }
@@ -38,6 +35,9 @@
     .title {
       font-size: 16px;
       letter-spacing: 1px;
+    }
+    .group {
+      display: flex;
     }
   }
 

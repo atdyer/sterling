@@ -28,7 +28,7 @@ const ui = (
         connection={alloy}
         message={'Use Alloy to generate an instance.'}
         navbar={AlloyNavbar}
-        views={[graph, table]}/>
+        views={[table, graph]}/>
 );
 
 ReactDOM.render(ui, document.getElementById('root'));

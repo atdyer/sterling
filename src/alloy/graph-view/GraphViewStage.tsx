@@ -40,6 +40,7 @@ class GraphViewStage extends React.Component<IGraphViewStageProps> {
 
         return <canvas
             ref={ref => this._ref = ref}
+            className={'graph'}
             style={stageStyle}/>;
 
     }

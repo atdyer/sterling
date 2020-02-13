@@ -47,7 +47,7 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    connect () {
+    connect (): void {
 
         if (this._ws) {
             this._ws.onclose = null;
@@ -85,12 +85,35 @@ class AlloyConnection extends SterlingConnection {
 
     request (request: string): void {
 
-        if (this._rq.has(request))
-            this._rq.get(request)!();
+        this._request(request);
 
     }
 
-    _on_open (e: Event) {
+    private _handle_eval (data: string): void {
+        const cbs = this._cb.get('eval') || [];
+        if (data.length) {
+            cbs.forEach(cb => cb(data));
+        }
+    }
+
+    private _handle_instance (data: string): void {
+
+        const cbs = this._cb.get('instance') || [];
+        if (data.length) {
+            let instance = new AlloyInstance(data);
+            cbs.forEach(cb => cb(instance));
+        }
+
+    }
+
+    private _handle_pong (): void {
+
+        this._heartbeat_latency += performance.now() - this._heartbeat_timestamp;
+        this._heartbeat_count += 1;
+
+    }
+
+    private _on_open (e: Event) {
 
         this._reset_heartbeat();
         if (this._cb.has('connect')) {
@@ -99,7 +122,7 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    _on_close (e: Event) {
+    private _on_close (e: Event) {
 
         this._ws = null;
         if (this._auto_reconnect) this._reconnect();
@@ -109,7 +132,7 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    _on_error (e: Event) {
+    private _on_error (e: Event) {
 
         if (this._auto_reconnect) this._reconnect();
         if (this._cb.has('error')) {
@@ -118,7 +141,7 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    _on_message (e: MessageEvent) {
+    private _on_message (e: MessageEvent) {
 
         this._reset_heartbeat();
         let header = e.data.slice(0, 4);
@@ -127,15 +150,15 @@ class AlloyConnection extends SterlingConnection {
         switch (header) {
 
             case 'pong':
-                this._heartbeat_latency += performance.now() - this._heartbeat_timestamp;
-                this._heartbeat_count += 1;
+                this._handle_pong();
+                break;
+
+            case 'EVL:':
+                this._handle_eval(data);
                 break;
 
             case 'XML:':
-                if (data.length && this._cb.has('instance')) {
-                    let instance = new AlloyInstance(data);
-                    this._cb.get('instance')!.forEach(cb => cb(instance));
-                }
+                this._handle_instance(data);
                 break;
 
             default:
@@ -145,27 +168,27 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    _reconnect () {
+    private _reconnect () {
 
         window.setTimeout(this.connect.bind(this), this._auto_reconnect_interval);
 
     }
 
-    _request (request: string): void {
+    private _request (request: string): void {
 
         if (this._ws)
             this._ws.send(request);
 
     }
 
-    _reset_heartbeat () {
+    private _reset_heartbeat () {
 
         clearTimeout(this._heartbeat_id);
         this._heartbeat_id = window.setTimeout(this._ping.bind(this), this._heartbeat_interval);
 
     }
 
-    _ping () {
+    private _ping () {
 
         if (this._ws) {
             this._heartbeat_timestamp = performance.now();
