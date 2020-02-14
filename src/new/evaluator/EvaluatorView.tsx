@@ -1,6 +1,6 @@
-import { Callout, Icon } from '@blueprintjs/core';
+import { Callout, Icon, Intent } from '@blueprintjs/core';
 import React from 'react';
-import { Evaluator, Expression } from '../../new/evaluator/Evaluator';
+import { Evaluator, Expression } from './Evaluator';
 
 export interface IEvaluatorProps {
     evaluator: Evaluator
@@ -63,30 +63,34 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
             ? this._setText(state.expressions[state.history].expression)
             : this._setText('');
 
-        return <div className={'eval'}>
-            <div className={'eval-output'}>
-                {
-                    this.state.expressions.map(expression => (
-                        <Callout key={expression.id}
-                                 icon={expression.error ? ErrorIcon : SuccessIcon}
-                                 title={expression.expression}
-                                 intent={expression.error ? 'danger' : 'none'}
-                        >
-                            {expression.result}
-                        </Callout>
-                    ))
-                }
-                <div ref={this._botRef}/>
+        return (
+            <div className={'evaluator'}>
+                <div className={'evaluator-output'}>
+                    {
+                        this.state.expressions.map(expression => (
+                            <Callout
+                                key={expression.id}
+                                icon={expression.error ? ErrorIcon : SuccessIcon}
+                                title={expression.expression}
+                                intent={expression.error ? Intent.DANGER : Intent.NONE}
+                            >
+                                {expression.result}
+                            </Callout>
+                        ))
+                    }
+                    <div ref={this._botRef}/>
+                </div>
+                <div className={'evaluator-input'}>
+                    <textarea
+                        autoComplete={'off'}
+                        placeholder={'Enter an expression...'}
+                        spellCheck={'false'}
+                        onKeyDown={this._onKeyDown}
+                        ref={this._textRef}
+                    />
+                </div>
             </div>
-            <div className={'eval-input'}>
-                <textarea autoComplete={'off'}
-                          placeholder={'Enter an expression...'}
-                          spellCheck={'false'}
-                          onKeyDown={this._onKeyDown}
-                          ref={this._textRef}>
-                </textarea>
-            </div>
-        </div>
+        );
 
     }
 
@@ -188,6 +192,18 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
     };
 
+    private _scrollDown = (): void => {
+
+        const bottom = this._botRef.current;
+
+        if (bottom) {
+
+            bottom.scrollIntoView();
+
+        }
+
+    };
+
     private _setActive = (active: boolean): void => {
 
         const textarea = this._textRef.current;
@@ -211,18 +227,6 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         }
 
     };
-
-    private _scrollDown = (): void => {
-
-        const bottom = this._botRef.current;
-
-        if (bottom) {
-
-            bottom.scrollIntoView();
-
-        }
-
-    }
 
 }
 

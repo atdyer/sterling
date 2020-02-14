@@ -1,35 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { AlloyConnection } from './alloy/AlloyConnection';
-import AlloyNavbar from './alloy/AlloyNavbar';
-import GraphView from './alloy/graph-view/GraphView';
-import TableView from './alloy/table-view/TableView';
+import Sterling from './new/Sterling';
 import * as serviceWorker from './serviceWorker';
-import Sterling from './sterling/Sterling';
-import { ISterlingUIView } from './sterling/SterlingTypes';
-import './styles/index.scss';
+import './styles/new/index.scss';
 
 const alloy = new AlloyConnection();
 
-const graph: ISterlingUIView = {
-    name: 'Graph',
-    icon: 'graph',
-    view: GraphView
-};
+// const graph: ISterlingUIView = {
+//     name: 'Graph',
+//     icon: 'graph',
+//     view: GraphView
+// };
+//
+// const table: ISterlingUIView = {
+//     name: 'Table',
+//     icon: 'th',
+//     view: TableView
+// };
+//
+// const ui = (
+//     <Sterling
+//         connection={alloy}
+//         message={'Use Alloy to generate an instance.'}
+//         navbar={AlloyNavbar}
+//         views={[table, graph]}/>
+// );
 
-const table: ISterlingUIView = {
-    name: 'Table',
-    icon: 'th',
-    view: TableView
-};
-
-const ui = (
-    <Sterling
-        connection={alloy}
-        message={'Use Alloy to generate an instance.'}
-        navbar={AlloyNavbar}
-        views={[table, graph]}/>
-);
+const ui = <Sterling connection={alloy}/>;
 
 ReactDOM.render(ui, document.getElementById('root'));
 

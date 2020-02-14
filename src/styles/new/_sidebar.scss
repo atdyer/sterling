@@ -1,0 +1,22 @@
+@import "~@blueprintjs/core/lib/scss/variables";
+@import "variables";
+
+$st-sidebar-width: 4 * $pt-grid-size;
+
+.sidebar {
+
+  position: fixed;
+  top: $pt-navbar-height;
+  left: 0;
+  bottom: 0;
+  width: $st-sidebar-width;
+  z-index: 18;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  background-color: $dark-gray5;
+
+}

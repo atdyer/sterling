@@ -3,7 +3,7 @@ import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
 import SplitPane from 'react-split-pane';
 import { ISterlingViewProps } from '../../sterling/SterlingTypes';
-import { Evaluator } from '../evaluator/Evaluator';
+import { Evaluator } from '../../new/evaluator/Evaluator';
 import GraphViewSidebar from './GraphViewSidebar';
 import GraphViewStage from './GraphViewStage';
 

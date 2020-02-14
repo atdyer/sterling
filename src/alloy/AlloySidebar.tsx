@@ -1,7 +1,7 @@
 import { Button, Icon, Tab, Tabs } from '@blueprintjs/core';
 import React from 'react';
 import { ISterlingSidebarProps } from '../sterling/SterlingSidebar';
-import { Evaluator } from './evaluator/Evaluator';
+import { Evaluator } from '../new/evaluator/Evaluator';
 import EvaluatorView from './evaluator/EvaluatorView';
 
 export interface IAlloySidebarProps extends ISterlingSidebarProps {

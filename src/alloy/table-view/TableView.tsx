@@ -9,7 +9,7 @@ import {
     TableSortFunction,
     TablesType
 } from '../../sterling/SterlingTypes';
-import { Evaluator } from '../evaluator/Evaluator';
+import { Evaluator } from '../../new/evaluator/Evaluator';
 import { nameFunction } from './TableUtil';
 import TableViewSidebar from './TableViewSidebar';
 import TableViewStage from './TableViewStage';
