@@ -1,6 +1,81 @@
 @import '~@blueprintjs/core/lib/scss/variables';
 @import 'variables';
 
+.alloy-sidebar {
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $pt-dark-app-background-color;
+  font-size: 12px;
+  flex: 0 1 auto;
+
+  .bp3-tab-list {
+    padding: 7px 14px;
+    .bp3-tab {
+      font-size: 14px;
+      letter-spacing: 1px;
+      padding-bottom: 7px;
+      .bp3-icon {
+        padding-right: 0.35em;
+        vertical-align: sub;
+      }
+    }
+    .bp3-button {
+      margin-bottom: 6px;
+    }
+  }
+
+  &.collapsed {
+    > * {
+      padding: 7px !important;
+    }
+  }
+
+  .sidebar-pane {
+
+    margin-top: 0;
+    overflow-y: auto;
+    height: 100%;
+
+    .section {
+
+      display: flex;
+      flex-direction: column;
+
+      &.collapsed {
+        border-bottom: 1px solid $pt-dark-divider-white;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 7px 14px;
+        color: $pt-dark-heading-color;
+
+        .title {
+          font-size: 12px;
+          letter-spacing: 0.1em;
+        }
+
+      }
+
+      .section-body {
+        display: flex;
+        flex-direction: column;
+        padding: 7px 21px;
+
+        .bp3-form-group.bp3-inline {
+          justify-content: space-between;
+        }
+      }
+    }
+
+  }
+
+}
+
 .sterling-sidebar {
 
   display: flex;
@@ -29,7 +104,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 7px 14px;
+    padding: 7px;
     color: $pt-dark-heading-color;
     border-bottom: 1px solid $pt-dark-divider-white;
     .title {

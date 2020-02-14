@@ -19,6 +19,8 @@
   overflow: auto;
 
   padding: 10px;
+  flex: 1 0 auto;
+  max-width: 100%;
 
   &.row {
     flex-direction: row;
@@ -27,7 +29,6 @@
     &.right { justify-content: flex-end }
   }
   &.column {
-    flex: 1 0 auto;
     flex-direction: column;
     &.left { align-content: flex-start }
     &.center { align-content: center }

@@ -7,12 +7,15 @@ export interface IEvaluatorProps {
 }
 
 interface IEvaluatorState {
+    count: number
     expressions: Expression[]
+    history: number
 }
 
 class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
-    private _textRef: React.RefObject<HTMLTextAreaElement>;
+    private readonly _botRef: React.RefObject<HTMLDivElement>;
+    private readonly _textRef: React.RefObject<HTMLTextAreaElement>;
 
     constructor (props: IEvaluatorProps) {
 
@@ -22,17 +25,43 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         evaluator.addEventListener('pending', this._onPending);
         evaluator.addEventListener('ready', this._onReady);
 
+        this._botRef = React.createRef();
         this._textRef = React.createRef();
+
+        const expressions = props.evaluator.expressions();
         this.state = {
-            expressions: props.evaluator.expressions()
+            count: expressions.length,
+            expressions: expressions,
+            history: expressions.length
+        }
+
+    }
+
+    componentDidMount(): void {
+
+        this._scrollDown();
+
+    }
+
+    componentDidUpdate(prevProps: Readonly<IEvaluatorProps>, prevState: Readonly<IEvaluatorState>): void {
+
+        if (prevState.count !== this.state.count) {
+
+            this._scrollDown();
+
         }
 
     }
 
     render (): React.ReactNode {
 
+        const state = this.state;
         const SuccessIcon = <Icon icon={'circle'} iconSize={12}/>;
         const ErrorIcon = <Icon icon={'cross'} iconSize={12}/>;
+
+        state.history < state.count
+            ? this._setText(state.expressions[state.history].expression)
+            : this._setText('');
 
         return <div className={'eval'}>
             <div className={'eval-output'}>
@@ -47,6 +76,7 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
                         </Callout>
                     ))
                 }
+                <div ref={this._botRef}/>
             </div>
             <div className={'eval-input'}>
                 <textarea autoComplete={'off'}
@@ -65,10 +95,20 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         const textarea = this._textRef.current;
 
         if (textarea) {
+
             const pos = textarea.selectionStart;
             const len = textarea.value.length;
+
             if (pos === len) {
-                console.log('down');
+
+                const history = this.state.history < this.state.count
+                    ? this.state.history + 1
+                    : this.state.count;
+
+                this.setState({
+                    history: history
+                });
+
             }
         }
 
@@ -83,7 +123,8 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
             const value = textarea.value;
             textarea.value = '';
 
-            this.props.evaluator.evaluate(value);
+            if (value.length)
+                this.props.evaluator.evaluate(value);
 
         }
 
@@ -116,8 +157,11 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
     private _onReady = (): void => {
 
         this._setActive(true);
+        const expressions = this.props.evaluator.expressions();
         this.setState({
-            expressions: this.props.evaluator.expressions()
+            count: expressions.length,
+            expressions: expressions,
+            history: expressions.length
         });
 
     };
@@ -129,7 +173,15 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         if (textarea) {
 
             if (textarea.selectionStart === 0) {
-                console.log('up');
+
+                const history = this.state.history > 0
+                    ? this.state.history - 1
+                    : 0;
+
+                this.setState({
+                    history: history
+                });
+
             }
 
         }
@@ -143,6 +195,30 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         if (textarea) {
 
             textarea.readOnly = !active;
+
+        }
+
+    };
+
+    private _setText = (text: string): void => {
+
+        const textarea = this._textRef.current;
+
+        if (textarea) {
+
+            textarea.value = text;
+
+        }
+
+    };
+
+    private _scrollDown = (): void => {
+
+        const bottom = this._botRef.current;
+
+        if (bottom) {
+
+            bottom.scrollIntoView();
 
         }
 

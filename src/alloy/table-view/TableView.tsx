@@ -65,7 +65,7 @@ class TableView extends React.Component<ITableViewProps, ITableViewState> {
             removeBuiltin: true,
             removeEmpty: true,
             removeThis: true,
-            sidebarView: 'evaluator',
+            sidebarView: 'settings',
             skolemColors: sH,
             sortPrimary: sorting.groupSort(),
             sortSecondary: sorting.sizeSort(),

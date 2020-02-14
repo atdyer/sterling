@@ -1,4 +1,4 @@
-import { Button } from '@blueprintjs/core';
+import { Button, Icon, Tab, Tabs } from '@blueprintjs/core';
 import React from 'react';
 import { ISterlingSidebarProps } from '../sterling/SterlingSidebar';
 import { Evaluator } from './evaluator/Evaluator';
@@ -16,53 +16,46 @@ class AlloySidebar extends React.Component<IAlloySidebarProps> {
 
         const openIcon = 'menu-open';
         const closeIcon = 'menu-closed';
-        const props = this.props;
 
         if (this.props.collapsed) {
             return (
-                <div className={`sterling-sidebar left collapsed`}>
+                <div className={`alloy-sidebar left collapsed`}>
                     <div className='header'>
-                        <Button icon={openIcon} minimal={true} onClick={this.props.onToggleCollapse}/>
+                        <Button icon={openIcon}
+                                minimal={true}
+                                onClick={this.props.onToggleCollapse}
+                        />
                     </div>
                 </div>
             )
         }
 
-        return (
-            <div className={`sterling-sidebar left bp3-dark`}>
-                <div className='header'>
-                    <div className={'group'}>
-                        <Button active={props.view === 'settings'}
-                                icon={'cog'}
-                                minimal={true}
-                                onClick={this._requestSettings}
-                                text={this.props.title}/>
-                        <Button active={props.view === 'evaluator'}
-                                icon={'console'}
-                                minimal={true}
-                                onClick={this._requestEvaluator}
-                                text={'Evaluator'}/>
-                    </div>
-                    <div className={'group'}>
-                        <Button icon={closeIcon} minimal={true} onClick={this.props.onToggleCollapse}/>
-                    </div>
-                </div>
-                {
-                    props.view === 'settings'
-                        ? this.props.children
-                        : <EvaluatorView evaluator={props.evaluator}/>
-                }
-            </div>
-        )
+        return <Tabs id={'alloy-sidebar'}
+                     animate={false}
+                     className={'alloy-sidebar left bp3-dark'}
+                     selectedTabId={this.props.view}
+                     onChange={this._handleTabChange}>
+            <Tab id={'settings'}
+                 title={<><Icon icon={'cog'}/>Settings</>}
+                 panel={<>{this.props.children}</>}
+                 panelClassName={'sidebar-pane'}
+            />
+            <Tab id={'evaluator'}
+                 title={<><Icon icon={'console'}/>Evaluator</>}
+                 panel={<EvaluatorView evaluator={this.props.evaluator}/>}
+                 panelClassName={'sidebar-pane'}
+            />
+            <Tabs.Expander/>
+            <Button icon={closeIcon}
+                    minimal={true}
+                    onClick={this.props.onToggleCollapse}
+            />
+        </Tabs>
 
     }
 
-    private _requestEvaluator = () => {
-        this.props.onRequestSidebarView('evaluator');
-    };
-
-    private _requestSettings = () => {
-        this.props.onRequestSidebarView('settings');
+    private _handleTabChange = (id: 'settings' | 'evaluator'): void => {
+        this.props.onRequestSidebarView(id);
     }
 
 }

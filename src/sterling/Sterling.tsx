@@ -1,8 +1,10 @@
-import { NonIdealState } from '@blueprintjs/core';
+import { FocusStyleManager, NonIdealState } from '@blueprintjs/core';
 import React from 'react';
 import { SterlingConnection } from './SterlingConnection';
 import { ISterlingNavbarProps } from './SterlingNavbar';
 import { ISterlingUIView } from './SterlingTypes';
+
+FocusStyleManager.onlyShowFocusOnTabs();
 
 interface ISterlingProps {
     connection: SterlingConnection,
