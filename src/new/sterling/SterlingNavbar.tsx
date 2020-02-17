@@ -1,43 +1,52 @@
 import {
-    Button, Classes,
-    IconName,
-    MaybeElement,
-    Navbar, NavbarDivider,
-    NavbarHeading, Tag
+    Button,
+    Classes,
+    Navbar,
+    NavbarDivider,
+    NavbarHeading,
+    Tag
 } from '@blueprintjs/core';
 import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
-import { SterlingConnection } from '../sterling/SterlingConnection';
-import { MainView } from './SterlingTypes';
+import { connect, ConnectedProps } from 'react-redux';
+import { SterlingConnection } from '../../sterling/SterlingConnection';
+import { RootState } from '../rootReducer';
+import { selectMainView } from './sterlingSlice';
 
-export interface ISterlingNavbarItem {
+// Map redux state to navbar props
+const mapState = (state: RootState) => ({
+    view: state.sterlingSlice.mainView
+});
 
-    view: MainView
-    label: string
-    icon: IconName | MaybeElement
+// Actions
+const mapDispatch = {
+    selectMainView
+};
 
-}
+// Connect the two
+const connector = connect(
+    mapState,
+    mapDispatch
+);
 
-export interface ISterlingNavbarProps {
+// Create a props type for things from redux
+type SterlingNavbarReduxProps = ConnectedProps<typeof connector>;
 
+// Create a combined type for all props
+export type SterlingNavbarProps = SterlingNavbarReduxProps & {
     connection: SterlingConnection
-    items: ISterlingNavbarItem[]
-    view: MainView
-    onPickView: (item: MainView) => void
-
 }
 
+// Create an interface for the state
 interface ISterlingNavbarState {
-
     command: string
     connected: boolean
     ready: boolean
-
 }
 
-class SterlingNavbar extends React.Component<ISterlingNavbarProps, ISterlingNavbarState> {
+class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavbarState> {
 
-    constructor (props: ISterlingNavbarProps) {
+    constructor (props: SterlingNavbarProps) {
 
         super(props);
 
@@ -81,29 +90,33 @@ class SterlingNavbar extends React.Component<ISterlingNavbarProps, ISterlingNavb
                         Sterling
                     </NavbarHeading>
                     <NavbarDivider/>
-                    {
-                        props.items.map(item => (
-                            <Button key={item.label}
-                                    className={Classes.MINIMAL}
-                                    active={item.view === props.view}
-                                    large={true}
-                                    icon={item.icon}
-                                    text={item.label}
-                                    onClick={() => props.onPickView(item.view)}
-                            />
-                        ))
-                    }
+                    <Button
+                        active={props.view === 'graph'}
+                        className={Classes.MINIMAL}
+                        icon={'graph'}
+                        large={true}
+                        text={'Graph'}
+                        onClick={() => props.selectMainView('graph')}
+                    />
+                    <Button
+                        active={props.view === 'table'}
+                        className={Classes.MINIMAL}
+                        icon={'th'}
+                        large={true}
+                        text={'Table'}
+                        onClick={() => props.selectMainView('table')}
+                    />
                     <NavbarDivider/>
                 </Navbar.Group>
                 <Navbar.Group>
                     {
                         state.command.length > 0 &&
-                            <>
-                                <Tag minimal={true}>
-                                    {state.command}
-                                </Tag>
-                                <NavbarDivider/>
-                            </>
+                        <>
+                            <Tag minimal={true}>
+                                {state.command}
+                            </Tag>
+                            <NavbarDivider/>
+                        </>
                     }
                     <Button disabled={!state.ready}
                             intent={state.connected ? 'success' : 'danger'}
@@ -126,4 +139,4 @@ class SterlingNavbar extends React.Component<ISterlingNavbarProps, ISterlingNavb
 
 }
 
-export default SterlingNavbar;
+export default connector(SterlingNavbar);

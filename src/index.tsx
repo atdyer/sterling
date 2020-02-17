@@ -1,7 +1,10 @@
+import { createStore } from '@reduxjs/toolkit';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import { AlloyConnection } from './alloy/AlloyConnection';
-import Sterling from './new/Sterling';
+import { sterlingApp } from './new/rootReducer';
+import Sterling from './new/sterling/Sterling';
 import * as serviceWorker from './serviceWorker';
 import './styles/new/index.scss';
 
@@ -27,9 +30,19 @@ const alloy = new AlloyConnection();
 //         views={[table, graph]}/>
 // );
 
-const ui = <Sterling connection={alloy}/>;
+const store = createStore(sterlingApp);
 
-ReactDOM.render(ui, document.getElementById('root'));
+// Can't use this because alloy instance objects aren't serializable
+// const store = configureStore({
+//     reducer: sterlingApp
+// });
+
+ReactDOM.render(
+    <Provider store={store}>
+        <Sterling connection={alloy}/>
+    </Provider>,
+    document.getElementById('root'))
+;
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

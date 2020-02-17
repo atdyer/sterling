@@ -1,5 +1,50 @@
+@import '~@blueprintjs/core/lib/scss/variables';
+
 .drawer {
+
   height: 100%;
   max-height: 100%;
   overflow-y: hidden;
+  background-color: $pt-app-background-color;
+
+  .section {
+
+    display: flex;
+    flex-direction: column;
+
+    &.collapsed {
+      border-bottom: 1px solid $pt-divider-black;
+    }
+
+    .header {
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 14px;
+      color: $pt-heading-color;
+      font-weight: bold;
+
+      .title {
+        font-size: 12px;
+        letter-spacing: 0.1em;
+      }
+
+    }
+
+    .body {
+
+      display: flex;
+      flex-direction: column;
+      padding: 0 21px;
+      font-size: 12px;
+
+      .bp3-form-group.bp3-inline {
+        justify-content: space-between;
+      }
+
+    }
+
+  }
+
 }

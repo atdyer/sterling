@@ -53,6 +53,14 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
     }
 
+    componentWillUnmount(): void {
+
+        const evaluator = this.props.evaluator;
+        evaluator.removeEventListener('pending', this._onPending);
+        evaluator.removeEventListener('ready', this._onReady);
+
+    }
+
     render (): React.ReactNode {
 
         const state = this.state;

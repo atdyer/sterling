@@ -1,11 +1,11 @@
 import React from 'react';
 
-class SterlingDrawer extends React.Component {
+class SterlingStage extends React.Component {
 
     render (): React.ReactNode {
 
         return (
-            <div className={'drawer'}>
+            <div className={'stage'}>
                 { this.props.children }
             </div>
         );
@@ -14,4 +14,4 @@ class SterlingDrawer extends React.Component {
 
 }
 
-export default SterlingDrawer;
+export default SterlingStage;

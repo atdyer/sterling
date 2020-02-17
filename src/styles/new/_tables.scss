@@ -1,0 +1,62 @@
+@import '~@blueprintjs/core/lib/scss/variables';
+
+.tables {
+
+  display: flex;
+  align-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  overflow: auto;
+
+  &.row {
+    flex-direction: row;
+    &.left { justify-content: flex-start }
+    &.center { justify-content: center }
+    &.right { justify-content: flex-end }
+  }
+  &.column {
+    flex-direction: column;
+    &.left { align-content: flex-start }
+    &.center { align-content: center }
+    &.right { align-content: flex-end }
+  }
+
+  .bp3-card {
+    margin: 10px;
+    padding: 10px 10px 5px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    > * {
+      margin-bottom: 5px;
+    }
+  }
+
+}
+
+.sig-tag {
+  background-color: $blue3 !important;
+  span {
+    color: $light-gray5;
+    text-align: center;
+  }
+}
+
+.field-tag {
+  background-color: $gray1 !important;
+  span {
+    color: $light-gray5;
+    text-align: center;
+  }
+}
+
+.skolem-tag {
+  background-color: $green3 !important;
+  span {
+    color: $light-gray5;
+    text-align: center;
+  }
+}
