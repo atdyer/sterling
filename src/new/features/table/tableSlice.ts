@@ -116,6 +116,10 @@ const tableSlice = createSlice({
                     return [skolem, SKOLEM_COLORS[i % skolems.length]];
                 }));
 
+                state.dataSelected = state.dataSelected.filter(item => {
+                    return state.data.find(curr => curr.id() === item.id()) !== undefined;
+                })
+
             }
 
         })
