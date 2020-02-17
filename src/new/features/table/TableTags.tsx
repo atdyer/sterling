@@ -4,7 +4,8 @@ import * as React from 'react';
 import { SigFieldSkolem } from './tableTypes';
 
 export interface IAlloyTagProps {
-    nameFunction?: (item: SigFieldSkolem) => string,
+    fill?: boolean
+    nameFunction?: (item: SigFieldSkolem) => string
 }
 
 export interface ISignatureTagProps extends IAlloyTagProps {
@@ -34,7 +35,7 @@ class SignatureTag extends React.Component<ISignatureTagProps> {
                 : props.signature.name();
 
         return (
-            <Tag className={SignatureTag.className} fill={true}>
+            <Tag className={SignatureTag.className} fill={props.fill}>
                 { name }
             </Tag>
         );

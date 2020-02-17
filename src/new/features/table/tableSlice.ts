@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlloyInstance } from 'alloy-ts';
+import { AlloyInstance, AlloySkolem } from 'alloy-ts';
 import { setInstance } from '../../alloy/alloySlice';
 import {
     HorizontalAlignment,
     LayoutDirection,
     SigFieldSkolem,
+    SKOLEM_COLORS,
     SortDirection,
     SortMethod,
     SortType,
@@ -17,7 +18,8 @@ export interface TableState {
     collapseData: boolean
     collapseLayout: boolean
     collapseTables: boolean
-    data: (SigFieldSkolem)[]
+    data: SigFieldSkolem[]
+    dataSelected: SigFieldSkolem[]
     highlightSkolems: boolean
     layoutDirection: LayoutDirection
     removeBuiltin: boolean
@@ -25,6 +27,7 @@ export interface TableState {
     removeThis: boolean
     primarySort: SortType
     secondarySort: SortType
+    skolemColors: Map<AlloySkolem, string>
     tablesType: TablesType
 }
 
@@ -35,6 +38,7 @@ const initialState: TableState = {
     collapseLayout: false,
     collapseTables: false,
     data: [],
+    dataSelected: [],
     highlightSkolems: true,
     layoutDirection: LayoutDirection.Row,
     removeBuiltin: true,
@@ -48,6 +52,7 @@ const initialState: TableState = {
         method: SortMethod.Size,
         direction: SortDirection.Descending
     },
+    skolemColors: new Map(),
     tablesType: TablesType.All
 };
 
@@ -56,6 +61,20 @@ const tableSlice = createSlice({
     name: 'table',
     initialState: initialState,
     reducers: {
+        clearSelectedData (state) { state.dataSelected = [] },
+        deselectData (state, action: PayloadAction<SigFieldSkolem>) {
+            const index = state.dataSelected.indexOf(action.payload);
+            if (index !== -1) {
+                state.dataSelected.splice(index, 1);
+            }
+            state.tablesType = TablesType.Select;
+        },
+        selectData (state, action: PayloadAction<SigFieldSkolem>) {
+            if (!state.dataSelected.includes(action.payload)) {
+                state.dataSelected.push(action.payload);
+            }
+            state.tablesType = TablesType.Select;
+        },
         setAlignment (state, action: PayloadAction<HorizontalAlignment>) { state.alignment = action.payload },
         setLayoutDirection (state, action: PayloadAction<LayoutDirection>) { state.layoutDirection = action.payload },
         setSort (state, action: PayloadAction<SortType>) {
@@ -85,11 +104,17 @@ const tableSlice = createSlice({
 
             if (instance) {
 
+                const skolems = instance.skolems();
+
                 state.data = [
                     ...instance.signatures(),
                     ...instance.fields(),
-                    ...instance.skolems()
+                    ...skolems
                 ];
+
+                state.skolemColors = new Map(skolems.map((skolem, i) => {
+                    return [skolem, SKOLEM_COLORS[i % skolems.length]];
+                }));
 
             }
 
@@ -97,6 +122,9 @@ const tableSlice = createSlice({
 });
 
 export const {
+    clearSelectedData,
+    deselectData,
+    selectData,
     setAlignment,
     setLayoutDirection,
     setSort,

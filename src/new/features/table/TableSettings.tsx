@@ -12,7 +12,11 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
+import AlloyMultiSelect from './drawer-components/AlloyMultiSelect';
 import {
+    clearSelectedData,
+    deselectData,
+    selectData,
     setAlignment,
     setLayoutDirection,
     setSort,
@@ -26,6 +30,7 @@ import {
     toggleRemoveThis
 } from './tableSlice';
 import {
+    buildNameFunction,
     HorizontalAlignment,
     LayoutDirection, SortDirection,
     SortMethod,
@@ -39,6 +44,9 @@ const mapState = (state: RootState) => ({
 
 // Actions
 const mapDispatch = {
+    clearSelectedData,
+    deselectData,
+    selectData,
     setAlignment,
     setLayoutDirection,
     setSort,
@@ -76,6 +84,7 @@ const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
             <SterlingDrawer.Section
                 collapsed={settings.collapseTables}
                 onToggle={props.toggleCollapseTables}
+                style={{ zIndex: 1 }}
                 title={'Tables'}>
                 <FormGroup>
                     <RadioGroup
@@ -86,6 +95,13 @@ const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
                         <Radio label='Fields' value={TablesType.Fields}/>
                         <Radio label='Skolems' disabled={settings.highlightSkolems} value={TablesType.Skolems}/>
                         <Radio label='Choose Tables' value={TablesType.Select}/>
+                        <AlloyMultiSelect
+                            items={settings.data}
+                            itemsSelected={settings.dataSelected}
+                            onClearSelectedItems={props.clearSelectedData}
+                            onDeselectItem={props.deselectData}
+                            onSelectItem={props.selectData}
+                            nameFunction={buildNameFunction(settings.removeThis)}/>
                     </RadioGroup>
                 </FormGroup>
             </SterlingDrawer.Section>

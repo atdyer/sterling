@@ -11,6 +11,7 @@
 
     display: flex;
     flex-direction: column;
+    transform: translate3d(0, 0, 0);
 
     &.collapsed {
       border-bottom: 1px solid $pt-divider-black;
@@ -41,6 +42,14 @@
 
       .bp3-form-group.bp3-inline {
         justify-content: space-between;
+      }
+
+      .bp3-popover {
+        width: 100%;
+      }
+
+      .bp3-transition-container {
+        width: calc(100% - 42px);
       }
 
     }

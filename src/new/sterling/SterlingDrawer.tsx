@@ -1,9 +1,10 @@
 import { Button, Collapse } from '@blueprintjs/core';
-import React from 'react';
+import React, { CSSProperties } from 'react';
 
 interface ISectionProps {
     collapsed: boolean
     onToggle: () => void
+    style?: CSSProperties
     title?: string
 }
 
@@ -12,7 +13,9 @@ const Section: React.FunctionComponent<ISectionProps> = props => {
     const collapseIcon = props.collapsed ? 'expand-all' : 'collapse-all';
 
     return (
-        <div className={`section ${props.collapsed ? 'collapsed' : ''}`}>
+        <div
+            className={`section ${props.collapsed ? 'collapsed' : ''}`}
+            style={props.style}>
             {
                 !!props.title &&
                 <div className='header'>

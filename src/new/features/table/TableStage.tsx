@@ -1,28 +1,19 @@
 import { Card } from '@blueprintjs/core';
-import {
-    AlloyElement,
-    AlloyField,
-    AlloySignature,
-    AlloySkolem,
-    filtering,
-    sorting
-} from 'alloy-ts';
+import { AlloyField, AlloySignature, AlloySkolem, filtering } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
-import FieldHTMLTable, { IFieldHTMLTableProps } from './stage-components/FieldHTMLTable';
-import SignatureHTMLTable, { ISignatureHTMLTableProps } from './stage-components/SignatureHTMLTable';
-import SkolemHTMLTable, { ISkolemHTMLTableProps } from './stage-components/SkolemHTMLTable';
+import FieldHTMLTable from './stage-components/FieldHTMLTable';
+import SignatureHTMLTable from './stage-components/SignatureHTMLTable';
+import SkolemHTMLTable from './stage-components/SkolemHTMLTable';
 import { FieldTag, SignatureTag, SkolemTag } from './TableTags';
 import {
+    getAlignClass,
     AlloyNameFn,
-    AlloySortFn,
-    HorizontalAlignment,
-    LayoutDirection,
+    buildNameFunction,
+    buildSortFunction,
+    getLayoutClass,
     SigFieldSkolem,
-    SortDirection,
-    SortMethod,
-    SortType,
     TablesType
 } from './tableTypes';
 
@@ -42,8 +33,8 @@ const TableStage: React.FunctionComponent<TableStageProps> = props => {
 
     const settings = props.settings;
 
-    const alignment = alignClass(settings.alignment);
-    const direction = layoutClass(settings.layoutDirection);
+    const alignment = getAlignClass(settings.alignment);
+    const direction = getLayoutClass(settings.layoutDirection);
     const nameFunction = buildNameFunction(settings.removeThis);
     const primarySort = buildSortFunction(settings.primarySort, nameFunction);
     const secondSort = buildSortFunction(settings.secondarySort, nameFunction);
@@ -53,7 +44,7 @@ const TableStage: React.FunctionComponent<TableStageProps> = props => {
         type === TablesType.Signatures ? settings.data.filter(filtering.keepSignatures) :
         type === TablesType.Fields ? settings.data.filter(filtering.keepFields) :
         type === TablesType.Skolems ? settings.data.filter(filtering.keepSkolems) :
-        type === TablesType.Select ? [] : [];
+        type === TablesType.Select ? settings.dataSelected.slice() : [];
 
     const pass = () => true;
     data = type === TablesType.Select
@@ -74,7 +65,27 @@ const TableStage: React.FunctionComponent<TableStageProps> = props => {
                     <Card key={item.id()}
                           elevation={1}>
                         { buildTableHeader(item, nameFunction) }
-                        { buildTable(item, nameFunction) }
+                        {
+                            item.expressionType() === 'signature' ?
+                                SignatureHTMLTable({
+                                    highlightSkolems: settings.highlightSkolems,
+                                    signature: item as AlloySignature,
+                                    skolemColors: settings.skolemColors
+                                }) :
+                            item.expressionType() === 'field' ?
+                                FieldHTMLTable({
+                                    field: item as AlloyField,
+                                    highlightSkolems: settings.highlightSkolems,
+                                    nameFunction: nameFunction,
+                                    skolemColors: settings.skolemColors
+                                }) :
+                            item.expressionType() === 'skolem' ?
+                                SkolemHTMLTable({
+                                    nameFunction: nameFunction,
+                                    skolem: item as AlloySkolem
+                                }) :
+                            null
+                        }
                     </Card>
                 ))
             }
@@ -83,85 +94,32 @@ const TableStage: React.FunctionComponent<TableStageProps> = props => {
 
 };
 
-function alignClass (alignment: HorizontalAlignment): string {
-    return alignment === HorizontalAlignment.Left ? 'left' :
-        alignment === HorizontalAlignment.Center ? 'center' :
-        alignment === HorizontalAlignment.Right ? 'right' : '';
-}
-
-function buildNameFunction (removeThis: boolean): AlloyNameFn {
-    return (item: AlloyElement) => {
-        return removeThis
-            ? item.id().replace(/^this\//, '')
-            : item.id();
-    }
-}
-
-function buildSortFunction (type: SortType, nameFunction: AlloyNameFn): AlloySortFn {
-    if (type.method === SortMethod.Size) {
-        return sorting.sizeSort(type.direction === SortDirection.Ascending);
-    }
-    if (type.method === SortMethod.Alphabetical) {
-        return sorting.alphabeticalSort(nameFunction, type.direction === SortDirection.Ascending);
-    }
-    if (type.method === SortMethod.Group) {
-        return sorting.groupSort();
-    }
-    return () => 0;
-}
-
-function buildTable (item: SigFieldSkolem, nameFunction: AlloyNameFn): React.ReactNode {
-    if (item.expressionType() === 'signature') {
-        const props: ISignatureHTMLTableProps = {
-            highlightSkolems: false,
-            signature: item as AlloySignature,
-            skolemColors: new Map()
-        };
-        return SignatureHTMLTable(props);
-    }
-    if (item.expressionType() === 'field') {
-        const props: IFieldHTMLTableProps = {
-            field: item as AlloyField,
-            highlightSkolems: false,
-            nameFunction: nameFunction,
-            skolemColors: new Map()
-        };
-        return FieldHTMLTable(props);
-    }
-    if (item.expressionType() === 'skolem') {
-        const props: ISkolemHTMLTableProps = {
-            nameFunction: nameFunction,
-            skolem: item as AlloySkolem
-        };
-        return SkolemHTMLTable(props);
-    }
-    return null;
-}
 
 function buildTableHeader (item: SigFieldSkolem, nameFunction: AlloyNameFn): React.ReactNode {
 
     if (item.expressionType() === 'signature') {
-        return <SignatureTag signature={item as AlloySignature}
-                             nameFunction={nameFunction}/>;
+        return <SignatureTag
+            fill={true}
+            signature={item as AlloySignature}
+            nameFunction={nameFunction}/>;
     }
 
     if (item.expressionType() === 'field') {
-        return <FieldTag field={item as AlloyField}
-                         nameFunction={nameFunction}/>;
+        return <FieldTag
+            fill={true}
+            field={item as AlloyField}
+            nameFunction={nameFunction}/>;
     }
 
     if (item.expressionType() === 'skolem') {
-        return <SkolemTag skolem={item as AlloySkolem}
-                          nameFunction={nameFunction}/>;
+        return <SkolemTag
+            fill={true}
+            skolem={item as AlloySkolem}
+            nameFunction={nameFunction}/>;
     }
 
     return null;
 
-}
-
-function layoutClass (direction: LayoutDirection): string {
-    return direction === LayoutDirection.Row ? 'row' :
-        direction === LayoutDirection.Column ? 'column' : '';
 }
 
 
