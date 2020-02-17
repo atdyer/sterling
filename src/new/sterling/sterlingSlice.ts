@@ -11,7 +11,7 @@ export interface SterlingState {
 }
 
 const initialState: SterlingState = {
-    mainView: 'table',
+    mainView: 'graph',
     sideView: 'settings'
 };
 

@@ -1,4 +1,4 @@
-import { FocusStyleManager } from '@blueprintjs/core';
+import { FocusStyleManager, ResizeSensor } from '@blueprintjs/core';
 import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
@@ -7,6 +7,8 @@ import { SterlingConnection } from '../../sterling/SterlingConnection';
 import { setInstance } from '../alloy/alloySlice';
 import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
+import GraphSettings from '../features/graph/GraphSettings';
+import GraphStage from '../features/graph/GraphStage';
 import TableSettings from '../features/table/TableSettings';
 import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
@@ -20,6 +22,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 // Map redux state to sterling props
 const mapState = (state: RootState) => ({
+    graph: state.graphSlice.graph,
     mainView: state.sterlingSlice.mainView,
     sideView: state.sterlingSlice.sideView
 });
@@ -73,26 +76,29 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         const props = this.props;
 
         return (
-            <div className={'sterling'}>
-                <SterlingNavbar
-                    connection={props.connection}/>
-                <SterlingSidebar/>
-                {
-                    props.sideView === null
-                        ? this._getStage()
-                        : (
-                            <SplitPane
-                                split={'vertical'}
-                                defaultSize={350}
-                                minSize={150}
-                                maxSize={-150}
-                            >
-                                { this._getDrawer() }
-                                { this._getStage() }
-                            </SplitPane>
-                        )
-                }
-            </div>
+            <ResizeSensor onResize={this._resize}>
+                <div className={'sterling'}>
+                    <SterlingNavbar
+                        connection={props.connection}/>
+                    <SterlingSidebar/>
+                    {
+                        props.sideView === null
+                            ? this._getStage()
+                            : (
+                                <SplitPane
+                                    split={'vertical'}
+                                    defaultSize={350}
+                                    minSize={150}
+                                    maxSize={-150}
+                                    onChange={this._resize}
+                                >
+                                    { this._getDrawer() }
+                                    { this._getStage() }
+                                </SplitPane>
+                            )
+                    }
+                </div>
+            </ResizeSensor>
         )
 
     }
@@ -114,9 +120,9 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
     private _getSettings = (): React.ReactNode => {
         switch(this.props.mainView) {
             case 'graph':
-                return null;
+                return <GraphSettings/>;
             case 'table':
-                return <TableSettings instance={this.state.instance}/>;
+                return <TableSettings/>;
             default:
                 return null;
         }
@@ -129,9 +135,8 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         return (
             <SterlingStage>
                 {
-                    view === 'table'
-                        ? <TableStage/>
-                        : null
+                    view === 'table' ? <TableStage/> :
+                    view === 'graph' ? <GraphStage/> : null
                 }
             </SterlingStage>
         )
@@ -153,6 +158,12 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         connection.connect();
 
     };
+
+    private _resize = (): void => {
+
+        this.props.graph.resize();
+
+    }
 
 }
 

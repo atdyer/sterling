@@ -7,7 +7,6 @@ import {
     RadioGroup,
     Switch
 } from '@blueprintjs/core';
-import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
@@ -32,7 +31,8 @@ import {
 import {
     buildNameFunction,
     HorizontalAlignment,
-    LayoutDirection, SortDirection,
+    LayoutDirection,
+    SortDirection,
     SortMethod,
     TablesType
 } from './tableTypes';
@@ -67,12 +67,7 @@ const connector = connect(
 );
 
 // Create props for things from redux
-type TableSettingsReduxProps = ConnectedProps<typeof connector>;
-
-// Create a combined type for all props
-export type TableSettingsProps = TableSettingsReduxProps & {
-    instance: AlloyInstance | null
-}
+type TableSettingsProps = ConnectedProps<typeof connector>;
 
 // The table settings view
 const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
