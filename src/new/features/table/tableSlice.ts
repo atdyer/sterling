@@ -1,19 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {
-    AlloyField,
-    AlloyInstance,
-    AlloySignature,
-    AlloySkolem
-} from 'alloy-ts';
+import { AlloyInstance } from 'alloy-ts';
 import { setInstance } from '../../alloy/alloySlice';
-
-// Table view types
-export enum HorizontalAlignment { Left, Center, Right}
-export enum LayoutDirection { Row, Column}
-export enum SortDirection { Ascending, Descending}
-export enum SortType { Alphabetical, Builtin, Group, Size}
-export enum TablesType { All, Signatures, Fields, Skolems, Select}
-export type SigFieldSkolem = AlloySignature | AlloyField | AlloySkolem;
+import {
+    HorizontalAlignment,
+    LayoutDirection,
+    SigFieldSkolem,
+    SortDirection,
+    SortMethod,
+    SortType,
+    TablesType
+} from './tableTypes';
 
 // Table view state
 export interface TableState {
@@ -28,9 +24,7 @@ export interface TableState {
     removeEmpty: boolean
     removeThis: boolean
     primarySort: SortType
-    primarySortDirection: SortDirection
     secondarySort: SortType
-    secondarySortDirection: SortDirection
     tablesType: TablesType
 }
 
@@ -46,10 +40,14 @@ const initialState: TableState = {
     removeBuiltin: true,
     removeEmpty: true,
     removeThis: true,
-    primarySort: SortType.Group,
-    primarySortDirection: SortDirection.Descending,
-    secondarySort: SortType.Size,
-    secondarySortDirection: SortDirection.Descending,
+    primarySort: {
+        method: SortMethod.Group,
+        direction: SortDirection.Descending
+    },
+    secondarySort: {
+        method: SortMethod.Size,
+        direction: SortDirection.Descending
+    },
     tablesType: TablesType.All
 };
 
@@ -60,15 +58,13 @@ const tableSlice = createSlice({
     reducers: {
         setAlignment (state, action: PayloadAction<HorizontalAlignment>) { state.alignment = action.payload },
         setLayoutDirection (state, action: PayloadAction<LayoutDirection>) { state.layoutDirection = action.payload },
-        setTableTypes (state, action: PayloadAction<TablesType>) { state.tablesType = action.payload },
-        setSortDirection (state, action: PayloadAction<SortDirection>) {
-            state.secondarySortDirection = state.primarySortDirection;
-            state.primarySortDirection = action.payload;
-        },
-        setSortType (state, action: PayloadAction<SortType>) {
-            state.secondarySort = state.primarySort;
+        setSort (state, action: PayloadAction<SortType>) {
+            if (state.primarySort.method !== action.payload.method) {
+                state.secondarySort = state.primarySort;
+            }
             state.primarySort = action.payload;
         },
+        setTableTypes (state, action: PayloadAction<TablesType>) { state.tablesType = action.payload },
         toggleCollapseData (state) { state.collapseData = !state.collapseData },
         toggleCollapseLayout (state) { state.collapseLayout = !state.collapseLayout },
         toggleCollapseTables (state) { state.collapseTables = !state.collapseTables },
@@ -103,8 +99,7 @@ const tableSlice = createSlice({
 export const {
     setAlignment,
     setLayoutDirection,
-    setSortDirection,
-    setSortType,
+    setSort,
     setTableTypes,
     toggleCollapseData,
     toggleCollapseLayout,

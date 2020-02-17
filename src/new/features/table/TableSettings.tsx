@@ -13,16 +13,10 @@ import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
 import {
-    HorizontalAlignment,
-    LayoutDirection,
     setAlignment,
     setLayoutDirection,
-    setSortDirection,
-    setSortType,
+    setSort,
     setTableTypes,
-    SortDirection,
-    SortType,
-    TablesType,
     toggleCollapseData,
     toggleCollapseLayout,
     toggleCollapseTables,
@@ -31,6 +25,12 @@ import {
     toggleRemoveEmpty,
     toggleRemoveThis
 } from './tableSlice';
+import {
+    HorizontalAlignment,
+    LayoutDirection, SortDirection,
+    SortMethod,
+    TablesType
+} from './tableTypes';
 
 // Map redux state to table settings props
 const mapState = (state: RootState) => ({
@@ -41,8 +41,7 @@ const mapState = (state: RootState) => ({
 const mapDispatch = {
     setAlignment,
     setLayoutDirection,
-    setSortDirection,
-    setSortType,
+    setSort,
     setTableTypes,
     toggleCollapseData,
     toggleCollapseLayout,
@@ -164,32 +163,42 @@ const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
                             <Button
                                 icon='group-objects'
                                 onClick={() => {
-                                    props.setSortType(SortType.Group);
-                                    props.setSortDirection(SortDirection.Ascending);
+                                    props.setSort({
+                                        method: SortMethod.Group,
+                                        direction: SortDirection.Ascending
+                                    });
                                 }}/>
                             <Button
                                 icon='sort-alphabetical'
                                 onClick={() => {
-                                    props.setSortType(SortType.Alphabetical);
-                                    props.setSortDirection(SortDirection.Ascending);
+                                    props.setSort({
+                                        method: SortMethod.Alphabetical,
+                                        direction: SortDirection.Ascending
+                                    });
                                 }}/>
                             <Button
                                 icon='sort-alphabetical-desc'
                                 onClick={() => {
-                                    props.setSortType(SortType.Alphabetical);
-                                    props.setSortDirection(SortDirection.Descending);
+                                    props.setSort({
+                                        method: SortMethod.Alphabetical,
+                                        direction: SortDirection.Descending
+                                    });
                                 }}/>
                             <Button
                                 icon='sort-numerical'
                                 onClick={() => {
-                                    props.setSortType(SortType.Size);
-                                    props.setSortDirection(SortDirection.Ascending);
+                                    props.setSort({
+                                        method: SortMethod.Size,
+                                        direction: SortDirection.Ascending
+                                    });
                                 }}/>
                             <Button
                                 icon='sort-numerical-desc'
                                 onClick={() => {
-                                    props.setSortType(SortType.Size);
-                                    props.setSortDirection(SortDirection.Descending);
+                                    props.setSort({
+                                        method: SortMethod.Size,
+                                        direction: SortDirection.Descending
+                                    });
                                 }}/>
                         </ButtonGroup>
                     </FormGroup>

@@ -11,7 +11,7 @@ import PopoverRow from './PopoverRow';
 import SkolemListPopover from './SkolemListPopover';
 
 
-interface IFieldHTMLTableProps {
+export interface IFieldHTMLTableProps {
     field: AlloyField,
     highlightSkolems: boolean,
     nameFunction: (item: AlloySignature | AlloyField | AlloySkolem) => string,

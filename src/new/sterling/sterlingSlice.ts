@@ -11,8 +11,8 @@ export interface SterlingState {
 }
 
 const initialState: SterlingState = {
-    mainView: 'graph',
-    sideView: null
+    mainView: 'table',
+    sideView: 'settings'
 };
 
 const sterlingSlice = createSlice({

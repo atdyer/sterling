@@ -1,7 +1,7 @@
 import { Icon, Tag } from '@blueprintjs/core';
 import { AlloyField, AlloySignature, AlloySkolem } from 'alloy-ts';
 import * as React from 'react';
-import { SigFieldSkolem } from './tableSlice';
+import { SigFieldSkolem } from './tableTypes';
 
 export interface IAlloyTagProps {
     nameFunction?: (item: SigFieldSkolem) => string,

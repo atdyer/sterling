@@ -8,8 +8,7 @@ import {
 } from 'alloy-ts';
 import React from 'react';
 
-interface ISkolemHTMLTableProps {
-    color: string,
+export interface ISkolemHTMLTableProps {
     nameFunction: (item: AlloySignature | AlloyField | AlloySkolem) => string,
     skolem: AlloySkolem
 }
@@ -35,7 +34,7 @@ export default function SkolemHTMLTable (props: ISkolemHTMLTableProps) {
             }
             </tr>
             </thead>
-            <tbody style={{borderColor: props.color}}>
+            <tbody>
             {
                 tuples.map((tuple: AlloyTuple) => (
                     <tr key={tuple.id()}>
