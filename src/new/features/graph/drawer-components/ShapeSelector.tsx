@@ -1,10 +1,9 @@
-import { CircleStyle, RectangleStyle } from '@atdyer/graph-js';
+import { CircleStyle, RectangleStyle, ShapeStyle } from '@atdyer/graph-js';
 import { FormGroup, HTMLSelect, NumericInput } from '@blueprintjs/core';
 import React from 'react';
-import { SignatureStyle } from '../graphTypes';
 
 interface IShapeSelector {
-    style: SignatureStyle
+    shape: ShapeStyle
     onSetHeight: (height: number) => void
     onSetRadius: (radius: number) => void
     onSetShape: (shape: 'circle' | 'rectangle' | null) => void
@@ -13,8 +12,8 @@ interface IShapeSelector {
 
 const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
 
-    const style = props.style;
-    const type = style ? style.type : 'inheret';
+    const shape = props.shape;
+    const type = shape ? shape.type || 'inheret' : 'inheret';
 
     const options = [
         { value: 'inheret', label: 'Inheret' },
@@ -26,6 +25,7 @@ const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
         <>
             <FormGroup inline={true} label={'Shape'}>
                 <HTMLSelect
+                    minimal={true}
                     options={options}
                     value={type}
                     onChange={event => {
@@ -37,11 +37,11 @@ const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
             {
                 type === 'circle' ?
                     <CircleProps
-                        style={style as CircleStyle}
+                        style={shape as CircleStyle}
                         onSetRadius={props.onSetRadius}/> :
                 type === 'rectangle' ?
                     <RectangleProps
-                        style={style as RectangleStyle}
+                        style={shape as RectangleStyle}
                         onSetWidth={props.onSetWidth}
                         onSetHeight={props.onSetHeight}/> :
                 null
@@ -60,6 +60,7 @@ const CircleProps: React.FunctionComponent<ICircleProps> = props => {
         <FormGroup inline={true} label={'Radius'}>
             <NumericInput
                 allowNumericCharactersOnly={true}
+                fill={false}
                 min={1}
                 onValueChange={props.onSetRadius}
                 placeholder={radius ? radius.toString() : ''}
@@ -80,6 +81,7 @@ const RectangleProps: React.FunctionComponent<IRectangleProps> = props => {
         <FormGroup inline={true} label={'Width'}>
             <NumericInput
                 allowNumericCharactersOnly={true}
+                fill={false}
                 min={1}
                 onValueChange={props.onSetWidth}
                 placeholder={width ? width.toString() : ''}

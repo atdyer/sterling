@@ -1,9 +1,13 @@
+import { Node, NodeStyle } from '@atdyer/graph-js';
+import { cloneShapeStyle } from '@atdyer/graph-js/dist/styles/ShapeStyle';
+import { AlloyAtom, AlloySignature } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
+    instance: state.alloySlice.instance,
     settings: state.graphSlice
 });
 
@@ -34,7 +38,49 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     componentWillUnmount (): void {
 
-        // this.props.settings.graph.canvas(null);
+    }
+
+    componentDidUpdate (): void {
+
+        const instance = this.props.instance;
+        const graph = this.props.settings.graph;
+        const shapes = this.props.settings.shapes;
+
+        if (instance) {
+
+            // Get the nodes
+            const oldnodes = graph.nodes();
+            const newnodes = mergeAtomsToNodes(oldnodes, instance.atoms());
+            graph.nodes(newnodes);
+
+            // Create the node styles
+            const univ = instance.signatures().find(sig => sig.id() === 'univ');
+
+            if (univ) {
+
+                const populate = (sig: AlloySignature): NodeStyle => {
+                    const children = sig.subTypes().map(populate);
+                    const shape = shapes.get(sig.id());
+                    return {
+                        nodes: sig.atoms().map(atom => atom.name()),
+                        shape: shape ? cloneShapeStyle(shape) : undefined,
+                        children
+                    }
+                };
+
+                const styletree = populate(univ);
+                if (!styletree.shape) styletree.shape = {};
+                if (!styletree.shape.type) styletree.shape.type = 'circle';
+
+                graph.nodeStyles([styletree]);
+
+            }
+
+        } else {
+            graph.nodes([]);
+        }
+
+        graph.update();
 
     }
 
@@ -45,6 +91,24 @@ class GraphStage extends React.Component<GraphStageProps> {
         );
 
     }
+
+}
+
+function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
+
+    return atoms.map(atom => {
+        const id = atom.name();
+        const existing = nodes.find(node => node.id === id);
+        if (existing) {
+            return existing;
+        } else {
+            return {
+                id: id,
+                x: 0,
+                y: 0
+            }
+        }
+    });
 
 }
 

@@ -1,34 +1,43 @@
-import { FormGroup, HTMLSelect, NonIdealState, Tree } from '@blueprintjs/core';
+import { CircleLayout } from '@atdyer/graph-js';
+import { Button, ButtonGroup, NonIdealState, Tree } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
+import ShapeAttributeSelector from './drawer-components/ShapeAttributeSelector';
 import ShapeSelector from './drawer-components/ShapeSelector';
 import {
     collapseTreeNode,
     expandTreeNode,
-    selectItem,
+    selectTreeNode,
+    setFill,
     setHeight,
     setRadius,
     setShape,
+    setStroke,
+    setStrokeWidth,
     setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme
 } from './graphSlice';
+import { mapTreeToNodes } from './graphTypes';
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
-    settings: state.graphSlice
+    settings: state.graphSlice,
 });
 
 // Actions
 const mapDispatch = {
     collapseTreeNode,
     expandTreeNode,
-    selectItem,
+    selectTreeNode,
+    setFill,
     setHeight,
     setRadius,
     setShape,
+    setStroke,
+    setStrokeWidth,
     setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme
@@ -44,8 +53,12 @@ type GraphStageProps = ConnectedProps<typeof connector>;
 const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
 
     const settings = props.settings;
-    const selectedItem = settings.selectedItem;
-    const selectedStyle = settings.selectedItemStyle;
+    const selected = settings.selected;
+    const shape = selected ? settings.shapes.get(selected) || {} : {};
+    const tree = mapTreeToNodes(settings.signatureTree, settings.collapsed, selected);
+    const fill = shape ? shape.fill : undefined;
+    const stroke = shape ? shape.stroke : undefined;
+    const strokeWidth = shape ? shape.strokeWidth : undefined;
 
     return (
         <>
@@ -53,28 +66,44 @@ const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
                 collapsed={settings.collapseLayout}
                 onToggle={props.toggleCollapseLayout}
                 title={'Layout'}>
-                HI.
+                <ButtonGroup minimal={true}>
+                    <Button icon={'layout-circle'} onClick={() => {
+                        if (settings.graph) {
+                            const circle = new CircleLayout();
+                            circle.apply(settings.graph);
+                            settings.graph.update();
+                        }
+                    }}/>
+                </ButtonGroup>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
                 collapsed={settings.collapseTheme}
                 onToggle={props.toggleCollapseTheme}
                 title={'Theme'}>
                 <Tree
-                    contents={[settings.sigTree || {id: 0, label: 'nope'}]}
-                    onNodeClick={props.selectItem}
-                    onNodeCollapse={props.collapseTreeNode}
-                    onNodeExpand={props.expandTreeNode}
+                    contents={[tree]}
+                    onNodeClick={node => props.selectTreeNode(node.id.toString())}
+                    onNodeCollapse={node => props.collapseTreeNode(node.id.toString())}
+                    onNodeExpand={node => props.expandTreeNode(node.id.toString())}
                 />
                 {
-                    selectedItem
+                    selected
                         ? (
                             <>
                                 <ShapeSelector
-                                    style={selectedStyle}
+                                    shape={shape}
                                     onSetHeight={props.setHeight}
                                     onSetRadius={props.setRadius}
                                     onSetShape={props.setShape}
                                     onSetWidth={props.setWidth}
+                                />
+                                <ShapeAttributeSelector
+                                    fill={fill}
+                                    stroke={stroke}
+                                    strokeWidth={strokeWidth}
+                                    onChangeFill={props.setFill}
+                                    onChangeStroke={props.setStroke}
+                                    onChangeStrokeWidth={props.setStrokeWidth}
                                 />
                             </>
                         )
@@ -90,7 +119,5 @@ const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
         </>
     )
 };
-
-
 
 export default connector(GraphSettings);

@@ -1,102 +1,132 @@
-import { CircleLayout, Graph } from '@atdyer/graph-js';
-import { ITreeNode } from '@blueprintjs/core';
+import {
+    CircleStyle,
+    Graph,
+    RectangleStyle,
+    ShapeStyle
+} from '@atdyer/graph-js';
+import { cloneShapeStyle } from '@atdyer/graph-js/dist/styles/ShapeStyle';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlloyInstance, AlloySignature } from 'alloy-ts';
+import { AlloyInstance } from 'alloy-ts';
+import { Map } from 'immutable';
 import { setInstance } from '../../alloy/alloySlice';
 import {
-    convertStyle,
-    mergeAtomsToNodes,
-    mergeSignaturesToStyles,
-    SignatureStyle,
-    SignatureStyleMap
+    buildSignatureIDTree,
+    convertShape,
+    Tree
 } from './graphTypes';
 
 export interface GraphState {
+    collapsed: Map<string, boolean>
     collapseLayout: boolean
     collapseTheme: boolean
     graph: Graph
-    selectedItem: ITreeNode | null
-    selectedItemStyle: SignatureStyle
-    sigStyles: SignatureStyleMap
-    sigTree: ITreeNode | null
+    selected: string | null
+    shapes: Map<string, ShapeStyle>
+    signatureTree: Tree | null
 }
 
 const initialState: GraphState = {
+    collapsed: Map(),
     collapseLayout: false,
     collapseTheme: false,
     graph: new Graph(),
-    selectedItem: null,
-    selectedItemStyle: null,
-    sigStyles: {},
-    sigTree: null
+    selected: null,
+    shapes: Map(),
+    signatureTree: null
 };
 
 const graphSlice = createSlice({
     name: 'graph',
     initialState: initialState,
     reducers: {
-        collapseTreeNode (state, action: PayloadAction<ITreeNode>) {
-            const id = action.payload.id.toString();
-            if (state.sigTree) {
-                const node = findTreeNode(id, state.sigTree);
-                if (node) node.isExpanded = false;
-            }
+        collapseTreeNode (state, action: PayloadAction<string>) {
+            const target = action.payload;
+            state.collapsed = state.collapsed.set(target, true);
         },
-        expandTreeNode (state, action: PayloadAction<ITreeNode>) {
-            const id = action.payload.id.toString();
-            if (state.sigTree) {
-                const node = findTreeNode(id, state.sigTree);
-                if (node) node.isExpanded = true;
-            }
+        expandTreeNode (state, action: PayloadAction<string>) {
+            const target = action.payload;
+            state.collapsed = state.collapsed.set(target, false);
         },
-        selectItem (state, action: PayloadAction<ITreeNode>) {
-            const id = action.payload.id.toString();
-            if (state.sigTree) {
-                const curr = state.selectedItem
-                    ? findTreeNode(state.selectedItem.id.toString(), state.sigTree)
-                    : null;
-                const next = findTreeNode(id, state.sigTree);
-                if (curr) curr.isSelected = false;
-                if (next) {
-                    next.isSelected = true;
-                    state.selectedItem = next;
-                    state.selectedItemStyle = state.sigStyles[id] || null;
-                }
-
+        selectTreeNode (state, action: PayloadAction<string>) {
+            const target = action.payload;
+            if (state.shapes.has(target)) state.selected = target;
+        },
+        setFill (state, action: PayloadAction<string>) {
+            if (state.selected) {
+                const shape = state.shapes.get(state.selected);
+                const newshape: ShapeStyle = shape ? cloneShapeStyle(shape) : {};
+                newshape.fill = action.payload;
+                state.shapes = state.shapes.set(state.selected, newshape);
             }
         },
         setHeight (state, action: PayloadAction<number>) {
-            const item = state.selectedItem;
-            const height = action.payload;
-            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'rectangle' && height > 0) {
-                state.selectedItemStyle.height = height;
-                state.sigStyles[item.id] = state.selectedItemStyle;
+            if (state.selected) {
+                const height = action.payload;
+                const shape = state.shapes.get(state.selected);
+                if (shape && shape.type === 'rectangle') {
+                    const newshape = cloneShapeStyle(shape) as RectangleStyle;
+                    newshape.height = height;
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
             }
         },
         setRadius (state, action: PayloadAction<number>) {
-            const item = state.selectedItem;
-            const radius = action.payload;
-            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'circle' && radius > 0) {
-                state.selectedItemStyle.radius = radius;
-                state.sigStyles[item.id] = state.selectedItemStyle;
+            if (state.selected) {
+                const radius = action.payload;
+                const shape = state.shapes.get(state.selected);
+                if (shape && shape.type === 'circle') {
+                    const newshape = cloneShapeStyle(shape) as CircleStyle;
+                    newshape.radius = radius;
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
             }
         },
         setShape (state, action: PayloadAction<'circle' | 'rectangle' | null>) {
-            const shape = action.payload;
-            if (state.selectedItem) {
-                const id = state.selectedItem.id.toString();
-                const style = state.sigStyles[id] || null;
-                const newStyle = convertStyle(style, shape);
-                state.sigStyles[id] = newStyle;
-                state.selectedItemStyle = newStyle;
+            if (state.selected) {
+                const shape = state.shapes.get(state.selected);
+                const type = action.payload;
+                if (shape === undefined) return;
+                if ((shape && shape.type !== type) || shape !== type) {
+                    state.shapes = state.shapes.set(
+                        state.selected,
+                        convertShape(shape, type)
+                    );
+                }
+            }
+        },
+        setStroke (state, action: PayloadAction<string>) {
+            if (state.selected) {
+                const shape = state.shapes.get(state.selected);
+                if (shape) {
+                    const newshape = cloneShapeStyle(shape)!;
+                    newshape.stroke = action.payload;
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
+            }
+        },
+        setStrokeWidth (state, action: PayloadAction<number|null>) {
+            if (state.selected) {
+                const shape = state.shapes.get(state.selected);
+                if (shape) {
+                    const newshape = cloneShapeStyle(shape)!;
+                    if (action.payload === null) {
+                        delete newshape.strokeWidth;
+                    } else {
+                        newshape.strokeWidth = action.payload;
+                    }
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
             }
         },
         setWidth (state, action: PayloadAction<number>) {
-            const item = state.selectedItem;
-            const width = action.payload;
-            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'rectangle' && width > 0) {
-                state.selectedItemStyle.width = width;
-                state.sigStyles[item.id] = state.selectedItemStyle;
+            if (state.selected) {
+                const width = action.payload;
+                const shape = state.shapes.get(state.selected);
+                if (shape && shape.type === 'rectangle') {
+                    const newshape = cloneShapeStyle(shape) as RectangleStyle;
+                    newshape.width = width;
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
             }
         },
         toggleCollapseLayout (state) { state.collapseLayout = !state.collapseLayout },
@@ -110,9 +140,22 @@ const graphSlice = createSlice({
 
             if (instance) {
 
-                setNodes(graph, instance);
-                mergeSignaturesToStyles(state.sigStyles, instance.signatures());
-                state.sigTree = buildSigTree(instance);
+                state.signatureTree = buildSignatureIDTree(instance);
+                state.shapes = Map(instance.signatures().map(sig => {
+                    const id = sig.id();
+                    return state.shapes.has(id)
+                        ? [id, cloneShapeStyle(state.shapes.get(id)!)]
+                        : [id, {}];
+                }));
+                state.collapsed = Map(instance.signatures().map(sig => {
+                    const id = sig.id();
+                    return state.collapsed.has(id)
+                        ? [id, !!state.collapsed.get(id)]
+                        : [id, false];
+                }));
+                if (state.selected && !state.shapes.has(state.selected)){
+                    state.selected = null;
+                }
 
             }
 
@@ -121,54 +164,17 @@ const graphSlice = createSlice({
         })
 });
 
-function buildSigTree (instance: AlloyInstance): ITreeNode | null {
-
-    const univ = instance.signatures().find(sig => sig.id() === 'univ');
-
-    if (!univ) return null;
-
-    const populate = (sig: AlloySignature): ITreeNode => {
-        const children = sig.subTypes().map(populate);
-        return {
-            id: sig.id(),
-            icon: 'id-number',
-            label: sig.name(),
-            isExpanded: true,
-            childNodes: children.length ? children : undefined
-        }
-    };
-
-    return populate(univ);
-}
-
-function findTreeNode (id: string, tree: ITreeNode): ITreeNode | null {
-    if (tree.id === id) return tree;
-    if (tree.childNodes) {
-        for (let i = 0; i < tree.childNodes.length; ++i) {
-            const found = findTreeNode(id, tree.childNodes[i]);
-            if (found) return found;
-        }
-    }
-    return null;
-}
-
-function setNodes (graph: Graph, instance: AlloyInstance) {
-
-    const nodes = graph.nodes();
-    const newnodes = mergeAtomsToNodes(nodes, instance.atoms());
-    graph.nodes(newnodes);
-    const circle = new CircleLayout();
-    circle.apply(graph);
-
-}
 
 export const {
     collapseTreeNode,
     expandTreeNode,
-    selectItem,
+    selectTreeNode,
+    setFill,
     setHeight,
     setRadius,
     setShape,
+    setStroke,
+    setStrokeWidth,
     setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme

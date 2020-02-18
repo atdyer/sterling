@@ -1,18 +1,71 @@
-import { CircleStyle, Node, RectangleStyle } from '@atdyer/graph-js';
-import { AlloyAtom, AlloySignature } from 'alloy-ts';
+import { CircleStyle, RectangleStyle, ShapeStyle } from '@atdyer/graph-js';
+import {
+    isCircleStyle,
+    isRectangleStyle
+} from '@atdyer/graph-js/dist/styles/ShapeStyle';
+import { ITreeNode } from '@blueprintjs/core';
+import { AlloyInstance, AlloySignature } from 'alloy-ts';
+import { Map } from 'immutable'
 
-export type SignatureStyle = CircleStyle | RectangleStyle | null;
-export type SignatureStyleMap = {[key: string]: SignatureStyle};
+export type Tree = { id: string, children: Tree[] }
 
-function convertStyle (current: SignatureStyle, next: string | null): SignatureStyle {
+function buildSignatureIDTree (instance: AlloyInstance): Tree | null {
+
+    const univ = instance.signatures().find(sig => sig.id() === 'univ');
+
+    if (!univ) return null;
+
+    const populate = (sig: AlloySignature): Tree => {
+
+        const children = sig.subTypes().map(populate);
+        return {
+            id: sig.id(),
+            children
+        };
+
+    };
+
+    return populate(univ);
+
+}
+
+function cloneShape (shape: ShapeStyle): ShapeStyle {
+
+    if (isCircleStyle(shape)) {
+        return {
+            type: 'circle',
+            radius: shape.radius,
+            fill: shape.fill,
+            stroke: shape.stroke,
+            strokeDash: shape.strokeDash,
+            strokeWidth: shape.strokeWidth
+        } as CircleStyle
+    }
+
+    if (isRectangleStyle(shape)) {
+        return {
+            type: 'rectangle',
+            width: shape.width,
+            height: shape.height,
+            fill: shape.fill,
+            stroke: shape.stroke,
+            strokeDash: shape.strokeDash,
+            strokeWidth: shape.strokeWidth
+        } as RectangleStyle
+    }
+
+    return {};
+}
+
+function convertShape (current: ShapeStyle, next: string | null): ShapeStyle {
 
     const fill = current ? current.fill : 'white';
-    const stroke = current ? current.stroke : 'black';
+    const stroke = current ? current.stroke : '#333333';
     const strokeDash = current ? current.strokeDash : [];
-    const strokeWidth = current ? current.strokeWidth : 1;
+    const strokeWidth = current ? current.strokeWidth : 1.5;
 
     if (next === 'circle') {
-        const radius = current && current.type === 'rectangle'
+        const radius = current && isRectangleStyle(current)
             ? Math.min(current.width || 35, current.height || 35)
             : 35;
         return {
@@ -22,16 +75,16 @@ function convertStyle (current: SignatureStyle, next: string | null): SignatureS
             stroke,
             strokeDash,
             strokeWidth
-        }
+        } as CircleStyle
     }
 
     if (next === 'rectangle') {
-        const width = current && current.type === 'circle'
-            ? (current.radius || 35) * 2
-            : 70;
-        const height = current && current.type === 'circle'
+        const width = current && isCircleStyle(current)
+            ? (current.radius || 40) * 2
+            : 80;
+        const height = current && isCircleStyle(current)
             ? current.radius
-            : 35;
+            : 40;
         return {
             type: 'rectangle',
             fill,
@@ -40,66 +93,41 @@ function convertStyle (current: SignatureStyle, next: string | null): SignatureS
             strokeDash,
             strokeWidth,
             width
-
-        }
+        } as RectangleStyle
     }
 
-    return null;
+    return {};
 
 }
 
-function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
+function mapTreeToNodes (tree: Tree | null, collapsed: Map<string, boolean>, selected: string | null): ITreeNode {
 
-    return atoms.map(atom => {
-        const id = atom.name();
-        const existing = nodes.find(node => node.id === id);
-        if (existing) {
-            return existing;
-        } else {
-            return {
-                id: id,
-                x: 0,
-                y: 0
-            }
+    if (tree === null) return {
+        id: 'error',
+        label: 'No Instance',
+        icon: 'error'
+    };
+
+    const populate = (t: Tree): ITreeNode => {
+        const childNodes = t.children.map(populate);
+        return {
+            id: t.id,
+            label: t.id,
+            icon: 'id-number',
+            isExpanded: !collapsed.get(t.id),
+            isSelected: t.id === selected,
+            hasCaret: !!childNodes.length,
+            childNodes
         }
-    });
+    };
 
-}
-
-function mergeSignaturesToStyles (styles: SignatureStyleMap, signatures: AlloySignature[]) {
-
-    // Make a set of ids
-    const ids = new Set(signatures.map(sig => sig.id()));
-
-    // Remove ones that no longer exist
-    for (const sig in styles) {
-        if (styles.hasOwnProperty(sig)) {
-            if (!ids.has(sig)) delete styles[sig];
-        }
-    }
-
-    // Add those that don't already exist
-    signatures.forEach(sig => {
-        if (!styles.hasOwnProperty(sig.id())) {
-            styles[sig.id()] = null;
-        }
-    });
-
-    // Set a default shape for univ
-    if (styles.hasOwnProperty('univ') && styles.univ === null) {
-        styles.univ = {
-            type: 'circle',
-            radius: 35,
-            stroke: 'black',
-            strokeDash: [],
-            strokeWidth: 1
-        }
-    }
+    return populate(tree);
 
 }
 
 export {
-    convertStyle,
-    mergeAtomsToNodes,
-    mergeSignaturesToStyles
+    buildSignatureIDTree,
+    cloneShape,
+    convertShape,
+    mapTreeToNodes
 }
