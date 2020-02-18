@@ -3,11 +3,15 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
+import ShapeSelector from './drawer-components/ShapeSelector';
 import {
     collapseTreeNode,
     expandTreeNode,
     selectItem,
+    setHeight,
+    setRadius,
     setShape,
+    setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme
 } from './graphSlice';
@@ -22,7 +26,10 @@ const mapDispatch = {
     collapseTreeNode,
     expandTreeNode,
     selectItem,
+    setHeight,
+    setRadius,
     setShape,
+    setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme
 };
@@ -38,9 +45,7 @@ const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
 
     const settings = props.settings;
     const selectedItem = settings.selectedItem;
-    const selectedStyle = selectedItem
-        ? settings.sigStyles[selectedItem.id]
-        : null;
+    const selectedStyle = settings.selectedItemStyle;
 
     return (
         <>
@@ -65,8 +70,11 @@ const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
                         ? (
                             <>
                                 <ShapeSelector
-                                    selected={selectedStyle ? selectedStyle.type : null}
+                                    style={selectedStyle}
+                                    onSetHeight={props.setHeight}
+                                    onSetRadius={props.setRadius}
                                     onSetShape={props.setShape}
+                                    onSetWidth={props.setWidth}
                                 />
                             </>
                         )
@@ -83,36 +91,6 @@ const GraphSettings: React.FunctionComponent<GraphStageProps> = props => {
     )
 };
 
-interface IShapeSelector {
-    selected: 'circle' | 'rectangle' | null,
-    onSetShape: (shape: 'circle' | 'rectangle' | null) => void
-}
 
-const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
-
-    const value = props.selected || 'inheret';
-
-    const options = [
-        { value: 'inheret', label: 'Inheret' },
-        { value: 'circle', label: 'Circle' },
-        { value: 'rectangle', label: 'Rectangle' }
-    ];
-
-    return (
-        <FormGroup inline={true} label={'Shape'}>
-            <HTMLSelect
-                options={options}
-                value={value}
-                onChange={event => {
-                    let value = event.target.value;
-                    props.onSetShape(value === 'inheret'
-                        ? null : value === 'circle'
-                        ? 'circle' : value === 'rectangle'
-                        ? 'rectangle' : null);
-                }}
-            />
-        </FormGroup>
-    )
-};
 
 export default connector(GraphSettings);

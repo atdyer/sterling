@@ -4,8 +4,10 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlloyInstance, AlloySignature } from 'alloy-ts';
 import { setInstance } from '../../alloy/alloySlice';
 import {
+    convertStyle,
     mergeAtomsToNodes,
     mergeSignaturesToStyles,
+    SignatureStyle,
     SignatureStyleMap
 } from './graphTypes';
 
@@ -14,6 +16,7 @@ export interface GraphState {
     collapseTheme: boolean
     graph: Graph
     selectedItem: ITreeNode | null
+    selectedItemStyle: SignatureStyle
     sigStyles: SignatureStyleMap
     sigTree: ITreeNode | null
 }
@@ -23,6 +26,7 @@ const initialState: GraphState = {
     collapseTheme: false,
     graph: new Graph(),
     selectedItem: null,
+    selectedItemStyle: null,
     sigStyles: {},
     sigTree: null
 };
@@ -48,34 +52,51 @@ const graphSlice = createSlice({
         selectItem (state, action: PayloadAction<ITreeNode>) {
             const id = action.payload.id.toString();
             if (state.sigTree) {
-                const selected = state.selectedItem;
-                const node = findTreeNode(id, state.sigTree);
-                if (selected) {
-                    const curr = findTreeNode(selected.id.toString(), state.sigTree);
-                    if (curr) curr.isSelected = false;
-                }
-                if (node) {
-                    node.isSelected = true;
-                    state.selectedItem = node;
+                const curr = state.selectedItem
+                    ? findTreeNode(state.selectedItem.id.toString(), state.sigTree)
+                    : null;
+                const next = findTreeNode(id, state.sigTree);
+                if (curr) curr.isSelected = false;
+                if (next) {
+                    next.isSelected = true;
+                    state.selectedItem = next;
+                    state.selectedItemStyle = state.sigStyles[id] || null;
                 }
 
+            }
+        },
+        setHeight (state, action: PayloadAction<number>) {
+            const item = state.selectedItem;
+            const height = action.payload;
+            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'rectangle' && height > 0) {
+                state.selectedItemStyle.height = height;
+                state.sigStyles[item.id] = state.selectedItemStyle;
+            }
+        },
+        setRadius (state, action: PayloadAction<number>) {
+            const item = state.selectedItem;
+            const radius = action.payload;
+            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'circle' && radius > 0) {
+                state.selectedItemStyle.radius = radius;
+                state.sigStyles[item.id] = state.selectedItemStyle;
             }
         },
         setShape (state, action: PayloadAction<'circle' | 'rectangle' | null>) {
             const shape = action.payload;
             if (state.selectedItem) {
                 const id = state.selectedItem.id.toString();
-                const style = state.sigStyles[id];
-                if (style) {
-                    if (shape)
-                        style.type = shape;
-                    else
-                        state.sigStyles[id] = null;
-                } else if (shape) {
-                    state.sigStyles[id] = {
-                        type: shape
-                    };
-                }
+                const style = state.sigStyles[id] || null;
+                const newStyle = convertStyle(style, shape);
+                state.sigStyles[id] = newStyle;
+                state.selectedItemStyle = newStyle;
+            }
+        },
+        setWidth (state, action: PayloadAction<number>) {
+            const item = state.selectedItem;
+            const width = action.payload;
+            if (item && state.selectedItemStyle && state.selectedItemStyle.type === 'rectangle' && width > 0) {
+                state.selectedItemStyle.width = width;
+                state.sigStyles[item.id] = state.selectedItemStyle;
             }
         },
         toggleCollapseLayout (state) { state.collapseLayout = !state.collapseLayout },
@@ -145,7 +166,10 @@ export const {
     collapseTreeNode,
     expandTreeNode,
     selectItem,
+    setHeight,
+    setRadius,
     setShape,
+    setWidth,
     toggleCollapseLayout,
     toggleCollapseTheme
 } = graphSlice.actions;

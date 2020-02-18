@@ -34,7 +34,7 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     componentWillUnmount (): void {
 
-        this.props.settings.graph.canvas(null);
+        // this.props.settings.graph.canvas(null);
 
     }
 
