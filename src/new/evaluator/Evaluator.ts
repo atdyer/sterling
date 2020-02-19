@@ -80,7 +80,13 @@ class Evaluator extends EventDispatcher {
 
         const request = `EVL:${expression.id}:${expression.expression}`;
 
-        this._connection.request(request);
+        const submitted = this._connection.request(request);
+
+        if (!submitted) {
+
+            this._parse(`${expression.id}:ERR:Error: Not Connected`);
+
+        }
 
     }
 

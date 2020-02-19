@@ -17,8 +17,9 @@ abstract class SterlingConnection {
     /**
      * Submit a request to the data provider.
      * @param request The request to be submitted to the data provider.
+     * @return true if the request was submitted successfully, false otherwise
      */
-    abstract request (request: string): void;
+    abstract request (request: string): boolean;
 
 }
 

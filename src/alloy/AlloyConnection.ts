@@ -5,7 +5,6 @@ class AlloyConnection extends SterlingConnection {
 
     _ws: WebSocket | null;
     _cb: Map<string, ((...args: any[]) => void)[]>;
-    _rq: Map<string, () => void>;
 
     _heartbeat_count: number;
     _heartbeat_id: number;
@@ -15,6 +14,7 @@ class AlloyConnection extends SterlingConnection {
 
     _auto_reconnect: boolean;
     _auto_reconnect_interval: number;
+    _connected: boolean;
 
     constructor () {
 
@@ -22,7 +22,6 @@ class AlloyConnection extends SterlingConnection {
 
         this._ws = null;
         this._cb = new Map();
-        this._rq = new Map();
 
         this._heartbeat_count = 0;
         this._heartbeat_id = 0;
@@ -32,9 +31,7 @@ class AlloyConnection extends SterlingConnection {
 
         this._auto_reconnect = false;
         this._auto_reconnect_interval = 5000;
-
-        this._rq.set('current', () => this._request('current'));
-        this._rq.set('next', () => this._request('next'));
+        this._connected = false;
 
     }
 
@@ -83,9 +80,9 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    request (request: string): void {
+    request (request: string): boolean {
 
-        this._request(request);
+        return this._request(request);
 
     }
 
@@ -115,6 +112,7 @@ class AlloyConnection extends SterlingConnection {
 
     private _on_open (e: Event) {
 
+        this._connected = true;
         this._reset_heartbeat();
         if (this._cb.has('connect')) {
             this._cb.get('connect')!.forEach(cb => cb());
@@ -124,6 +122,7 @@ class AlloyConnection extends SterlingConnection {
 
     private _on_close (e: Event) {
 
+        this._connected = false;
         this._ws = null;
         if (this._auto_reconnect) this._reconnect();
         if (this._cb.has('disconnect')) {
@@ -174,10 +173,11 @@ class AlloyConnection extends SterlingConnection {
 
     }
 
-    private _request (request: string): void {
+    private _request (request: string): boolean {
 
-        if (this._ws)
+        if (this._connected && this._ws)
             this._ws.send(request);
+        return this._connected && !!this._ws;
 
     }
 
