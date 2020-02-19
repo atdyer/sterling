@@ -7,9 +7,9 @@ import { SterlingConnection } from '../../sterling/SterlingConnection';
 import { setInstance } from '../alloy/alloySlice';
 import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
-import GraphSettings from '../features/graph/GraphSettings';
+import GraphDrawer from '../features/graph/GraphDrawer';
 import GraphStage from '../features/graph/GraphStage';
-import TableSettings from '../features/table/TableSettings';
+import TableDrawer from '../features/table/TableDrawer';
 import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
 import SterlingDrawer from './SterlingDrawer';
@@ -23,8 +23,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 // Map redux state to sterling props
 const mapState = (state: RootState) => ({
     graph: state.graphSlice.graph,
-    mainView: state.sterlingSlice.mainView,
-    sideView: state.sterlingSlice.sideView
+    ...state.sterlingSlice
 });
 
 // Actions
@@ -74,15 +73,17 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
     render (): React.ReactNode {
 
         const props = this.props;
+        const drawerOpen =
+            (props.mainView === 'graph' && props.graphView !== null) ||
+            (props.mainView === 'table' && props.tableView !== null);
 
         return (
             <ResizeSensor onResize={this._resize}>
                 <div className={'sterling'}>
-                    <SterlingNavbar
-                        connection={props.connection}/>
+                    <SterlingNavbar connection={props.connection}/>
                     <SterlingSidebar/>
                     {
-                        props.sideView === null
+                        !drawerOpen
                             ? this._getStage()
                             : (
                                 <SplitPane
@@ -105,27 +106,25 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
 
     private _getDrawer = (): React.ReactNode => {
 
+        const props = this.props;
         const Evaluator = this._evaluatorView;
+        const evalActive =
+            (props.mainView === 'graph' && props.graphView === 'evaluator') ||
+            (props.mainView === 'table' && props.tableView === 'evaluator');
 
         return <SterlingDrawer>
             {
-                this.props.sideView === 'evaluator'
-                    ? <Evaluator evaluator={this._evaluator}/>
-                    : this._getSettings()
+                evalActive
+                    ?
+                        <Evaluator evaluator={this._evaluator}/>
+                    :
+                        props.mainView === 'graph' ? <GraphDrawer/> :
+                        props.mainView === 'table' ? <TableDrawer/> :
+                        null
+
             }
         </SterlingDrawer>;
 
-    };
-
-    private _getSettings = (): React.ReactNode => {
-        switch(this.props.mainView) {
-            case 'graph':
-                return <GraphSettings/>;
-            case 'table':
-                return <TableSettings/>;
-            default:
-                return null;
-        }
     };
 
     private _getStage = (): React.ReactNode => {

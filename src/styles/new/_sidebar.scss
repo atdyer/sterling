@@ -19,4 +19,11 @@ $st-sidebar-width: 4 * $pt-grid-size;
 
   background-color: $dark-gray5;
 
+  .divider {
+    flex: 0;
+    width: 75%;
+    border-bottom: 1px solid $pt-dark-divider-white;
+    margin: 5px 0;
+  }
+
 }

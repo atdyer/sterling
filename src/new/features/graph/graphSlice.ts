@@ -1,25 +1,25 @@
 import {
     CircleStyle,
+    convertToShape,
     Graph,
+    LabelStyle,
     RectangleStyle,
     ShapeStyle
 } from '@atdyer/graph-js';
+import { cloneLabelStyle } from '@atdyer/graph-js/dist/styles/LabelStyle';
 import { cloneShapeStyle } from '@atdyer/graph-js/dist/styles/ShapeStyle';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlloyInstance } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../alloy/alloySlice';
-import {
-    buildSignatureIDTree,
-    convertShape,
-    Tree
-} from './graphTypes';
+import { buildSignatureIDTree, Tree } from './graphTypes';
 
 export interface GraphState {
     collapsed: Map<string, boolean>
     collapseLayout: boolean
     collapseTheme: boolean
     graph: Graph
+    nodeLabels: Map<string, LabelStyle>
     selected: string | null
     shapes: Map<string, ShapeStyle>
     signatureTree: Tree | null
@@ -30,6 +30,7 @@ const initialState: GraphState = {
     collapseLayout: false,
     collapseTheme: false,
     graph: new Graph(),
+    nodeLabels: Map(),
     selected: null,
     shapes: Map(),
     signatureTree: null
@@ -54,7 +55,7 @@ const graphSlice = createSlice({
         setFill (state, action: PayloadAction<string>) {
             if (state.selected) {
                 const shape = state.shapes.get(state.selected);
-                const newshape: ShapeStyle = shape ? cloneShapeStyle(shape) : {};
+                const newshape = shape ? cloneShapeStyle(shape) : {};
                 newshape.fill = action.payload;
                 state.shapes = state.shapes.set(state.selected, newshape);
             }
@@ -68,6 +69,22 @@ const graphSlice = createSlice({
                     newshape.height = height;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
+            }
+        },
+        setNodeLabelColor (state, action: PayloadAction<string>) {
+            if (state.selected) {
+                const label = state.nodeLabels.get(state.selected);
+                const newlabel = label ? cloneLabelStyle(label) : {};
+                newlabel.color = action.payload;
+                state.nodeLabels = state.nodeLabels.set(state.selected, newlabel);
+            }
+        },
+        setNodeLabelSize (state, action: PayloadAction<number>) {
+            if (state.selected) {
+                const label = state.nodeLabels.get(state.selected);
+                const newlabel = label ? cloneLabelStyle(label) : {};
+                newlabel.font = `${action.payload}px sans-serif`;
+                state.nodeLabels = state.nodeLabels.set(state.selected, newlabel);
             }
         },
         setRadius (state, action: PayloadAction<number>) {
@@ -87,9 +104,10 @@ const graphSlice = createSlice({
                 const type = action.payload;
                 if (shape === undefined) return;
                 if ((shape && shape.type !== type) || shape !== type) {
+                    const newshape = convertToShape(shape, type);
                     state.shapes = state.shapes.set(
                         state.selected,
-                        convertShape(shape, type)
+                        newshape
                     );
                 }
             }
@@ -140,19 +158,33 @@ const graphSlice = createSlice({
 
             if (instance) {
 
+                // Build the signature tree using only IDs
                 state.signatureTree = buildSignatureIDTree(instance);
-                state.shapes = Map(instance.signatures().map(sig => {
-                    const id = sig.id();
-                    return state.shapes.has(id)
-                        ? [id, cloneShapeStyle(state.shapes.get(id)!)]
-                        : [id, {}];
-                }));
+
+                // For all maps, keep existing signatures, get rid of ones that
+                // no longer exist, and add new ones
+
                 state.collapsed = Map(instance.signatures().map(sig => {
                     const id = sig.id();
                     return state.collapsed.has(id)
                         ? [id, !!state.collapsed.get(id)]
                         : [id, false];
                 }));
+
+                state.nodeLabels = Map(instance.signatures().map(sig => {
+                    const id = sig.id();
+                    return state.nodeLabels.has(id)
+                        ? [id, cloneLabelStyle(state.nodeLabels.get(id)!)]
+                        : [id, {}];
+                }));
+
+                state.shapes = Map(instance.signatures().map(sig => {
+                    const id = sig.id();
+                    return state.shapes.has(id)
+                        ? [id, cloneShapeStyle(state.shapes.get(id)!)]
+                        : [id, {}];
+                }));
+
                 if (state.selected && !state.shapes.has(state.selected)){
                     state.selected = null;
                 }
@@ -171,6 +203,8 @@ export const {
     selectTreeNode,
     setFill,
     setHeight,
+    setNodeLabelColor,
+    setNodeLabelSize,
     setRadius,
     setShape,
     setStroke,

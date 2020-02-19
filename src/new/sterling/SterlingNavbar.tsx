@@ -11,7 +11,7 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { SterlingConnection } from '../../sterling/SterlingConnection';
 import { RootState } from '../rootReducer';
-import { selectMainView } from './sterlingSlice';
+import { setMainView } from './sterlingSlice';
 
 // Map redux state to navbar props
 const mapState = (state: RootState) => ({
@@ -20,7 +20,7 @@ const mapState = (state: RootState) => ({
 
 // Actions
 const mapDispatch = {
-    selectMainView
+    setMainView
 };
 
 // Connect the two
@@ -96,7 +96,7 @@ class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavba
                         icon={'graph'}
                         large={true}
                         text={'Graph'}
-                        onClick={() => props.selectMainView('graph')}
+                        onClick={() => props.setMainView('graph')}
                     />
                     <Button
                         active={props.view === 'table'}
@@ -104,7 +104,7 @@ class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavba
                         icon={'th'}
                         large={true}
                         text={'Table'}
-                        onClick={() => props.selectMainView('table')}
+                        onClick={() => props.setMainView('table')}
                     />
                     <NavbarDivider/>
                 </Navbar.Group>

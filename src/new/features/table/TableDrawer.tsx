@@ -39,7 +39,7 @@ import {
 
 // Map redux state to table settings props
 const mapState = (state: RootState) => ({
-    settings: state.tableSlice
+    ...state.tableSlice
 });
 
 // Actions
@@ -67,86 +67,84 @@ const connector = connect(
 );
 
 // Create props for things from redux
-type TableSettingsProps = ConnectedProps<typeof connector>;
+type TableDrawerProps = ConnectedProps<typeof connector>;
 
 // The table settings view
-const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
-
-    const settings = props.settings;
+const TableDrawer: React.FunctionComponent<TableDrawerProps> = props => {
 
     return (
         <>
             <SterlingDrawer.Section
-                collapsed={settings.collapseTables}
+                collapsed={props.collapseTables}
                 onToggle={props.toggleCollapseTables}
                 style={{ zIndex: 1 }}
                 title={'Tables'}>
                 <FormGroup>
                     <RadioGroup
                         onChange={event => props.setTableTypes(parseInt(event.currentTarget.value))}
-                        selectedValue={settings.tablesType}>
+                        selectedValue={props.tablesType}>
                         <Radio label='All Tables' value={TablesType.All}/>
                         <Radio label='Signatures' value={TablesType.Signatures}/>
                         <Radio label='Fields' value={TablesType.Fields}/>
-                        <Radio label='Skolems' disabled={settings.highlightSkolems} value={TablesType.Skolems}/>
+                        <Radio label='Skolems' disabled={props.highlightSkolems} value={TablesType.Skolems}/>
                         <Radio label='Choose Tables' value={TablesType.Select}/>
                         <AlloyMultiSelect
-                            items={settings.data}
-                            itemsSelected={settings.dataSelected}
+                            items={props.data}
+                            itemsSelected={props.dataSelected}
                             onClearSelectedItems={props.clearSelectedData}
                             onDeselectItem={props.deselectData}
                             onSelectItem={props.selectData}
-                            nameFunction={buildNameFunction(settings.removeThis)}/>
+                            nameFunction={buildNameFunction(props.removeThis)}/>
                     </RadioGroup>
                 </FormGroup>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
-                collapsed={settings.collapseData}
+                collapsed={props.collapseData}
                 onToggle={props.toggleCollapseData}
                 title={'Data Options'}>
                 <FormGroup>
 
                     <Switch
                         alignIndicator={Alignment.LEFT}
-                        checked={settings.removeBuiltin}
-                        disabled={settings.tablesType === TablesType.Select}
+                        checked={props.removeBuiltin}
+                        disabled={props.tablesType === TablesType.Select}
                         label='Hide Built-in Signatures'
                         onChange={props.toggleRemoveBuiltin}/>
 
                     <Switch
                         alignIndicator={Alignment.LEFT}
-                        checked={settings.removeEmpty}
-                        disabled={settings.tablesType === TablesType.Select}
+                        checked={props.removeEmpty}
+                        disabled={props.tablesType === TablesType.Select}
                         label='Hide Empty Tables'
                         onChange={props.toggleRemoveEmpty}/>
 
                     <Switch
                         alignIndicator={Alignment.LEFT}
-                        checked={settings.removeThis}
+                        checked={props.removeThis}
                         label='Remove "this" from Signature names'
                         onChange={props.toggleRemoveThis}/>
 
                     <Switch
                         alignIndicator={Alignment.LEFT}
-                        checked={settings.highlightSkolems}
+                        checked={props.highlightSkolems}
                         label='Display Skolems as highlighted rows'
                         onChange={props.toggleHighlightSkolems}/>
 
                 </FormGroup>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
-                collapsed={settings.collapseLayout}
+                collapsed={props.collapseLayout}
                 onToggle={props.toggleCollapseLayout}
                 title={'Layout Options'}>
                 <FormGroup>
                     <FormGroup inline={true} label='Layout Direction'>
                         <ButtonGroup>
                             <Button
-                                active={settings.layoutDirection === LayoutDirection.Row}
+                                active={props.layoutDirection === LayoutDirection.Row}
                                 icon='vertical-distribution'
                                 onClick={() => props.setLayoutDirection(LayoutDirection.Row)}/>
                             <Button
-                                active={settings.layoutDirection === LayoutDirection.Column}
+                                active={props.layoutDirection === LayoutDirection.Column}
                                 icon='horizontal-distribution'
                                 onClick={() => props.setLayoutDirection(LayoutDirection.Column)}/>
                         </ButtonGroup>
@@ -155,15 +153,15 @@ const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
                     <FormGroup inline={true} label='Align'>
                         <ButtonGroup>
                             <Button
-                                active={settings.alignment === HorizontalAlignment.Left}
+                                active={props.alignment === HorizontalAlignment.Left}
                                 icon='align-left'
                                 onClick={() => props.setAlignment(HorizontalAlignment.Left)}/>
                             <Button
-                                active={settings.alignment === HorizontalAlignment.Center}
+                                active={props.alignment === HorizontalAlignment.Center}
                                 icon='align-center'
                                 onClick={() => props.setAlignment(HorizontalAlignment.Center)}/>
                             <Button
-                                active={settings.alignment === HorizontalAlignment.Right}
+                                active={props.alignment === HorizontalAlignment.Right}
                                 icon='align-right'
                                 onClick={() => props.setAlignment(HorizontalAlignment.Right)}/>
                         </ButtonGroup>
@@ -221,4 +219,4 @@ const TableSettings: React.FunctionComponent<TableSettingsProps> = props => {
 
 };
 
-export default connector(TableSettings);
+export default connector(TableDrawer);

@@ -1,4 +1,5 @@
 import { Node, NodeStyle } from '@atdyer/graph-js';
+import { cloneLabelStyle } from '@atdyer/graph-js/dist/styles/LabelStyle';
 import { cloneShapeStyle } from '@atdyer/graph-js/dist/styles/ShapeStyle';
 import { AlloyAtom, AlloySignature } from 'alloy-ts';
 import React from 'react';
@@ -45,6 +46,7 @@ class GraphStage extends React.Component<GraphStageProps> {
         const instance = this.props.instance;
         const graph = this.props.settings.graph;
         const shapes = this.props.settings.shapes;
+        const nodeLabels = this.props.settings.nodeLabels;
 
         if (instance) {
 
@@ -61,9 +63,11 @@ class GraphStage extends React.Component<GraphStageProps> {
                 const populate = (sig: AlloySignature): NodeStyle => {
                     const children = sig.subTypes().map(populate);
                     const shape = shapes.get(sig.id());
+                    const label = nodeLabels.get(sig.id());
                     return {
                         nodes: sig.atoms().map(atom => atom.name()),
                         shape: shape ? cloneShapeStyle(shape) : undefined,
+                        label: label ? cloneLabelStyle(label) : undefined,
                         children
                     }
                 };
