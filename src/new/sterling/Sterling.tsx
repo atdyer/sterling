@@ -22,7 +22,7 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 // Map redux state to sterling props
 const mapState = (state: RootState) => ({
-    graph: state.graphSlice.graph,
+    graph: state.graphSlice.graphSlice.graph,
     ...state.sterlingSlice
 });
 

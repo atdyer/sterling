@@ -1,4 +1,11 @@
-import { Button, Intent, Position, Tooltip } from '@blueprintjs/core';
+import {
+    Button,
+    IconName,
+    Intent,
+    MaybeElement,
+    Position,
+    Tooltip
+} from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../rootReducer';
@@ -29,6 +36,30 @@ const connector = connect(
 // Create props
 export type SterlingSidebarProps = ConnectedProps<typeof connector>;
 
+// Sidebar button component props
+interface SidebarButtonProps {
+    active: boolean
+    click: () => void
+    icon: IconName | MaybeElement
+    text: string
+}
+
+// A sidebar button
+const SidebarButton: React.FunctionComponent<SidebarButtonProps> = props => (
+    <Tooltip
+        content={<span>{props.text}</span>}
+        hoverOpenDelay={500}
+        intent={Intent.PRIMARY}
+        position={Position.RIGHT}>
+        <Button
+            icon={props.icon}
+            minimal={true}
+            large={true}
+            active={props.active}
+            onClick={props.click}/>
+    </Tooltip>
+);
+
 // The sidebar view
 const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
 
@@ -45,21 +76,14 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
                 null
             }
             <div className={'divider'}/>
-            <Tooltip
-                content={<span>Evaluator</span>}
-                hoverOpenDelay={500}
-                intent={Intent.PRIMARY}
-                position={Position.RIGHT}>
-                <Button
-                    icon={'console'}
-                    minimal={true}
-                    large={true}
-                    active={evalActive}
-                    onClick={() => {
-                        if (mainview === 'graph') props.setGraphView('evaluator');
-                        if (mainview === 'table') props.setTableView('evaluator');
-                    }}/>
-            </Tooltip>
+            <SidebarButton
+                active={evalActive}
+                click={() => {
+                    if (mainview === 'graph') props.setGraphView('evaluator');
+                    if (mainview === 'table') props.setTableView('evaluator');
+                }}
+                icon={'console'}
+                text={'Evaluator'}/>
         </div>
     );
 
@@ -72,54 +96,31 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
 
     return (
         <>
-            <Tooltip
-                content={<span>Graph Settings</span>}
-                hoverOpenDelay={500}
-                intent={Intent.PRIMARY}
-                position={Position.RIGHT}>
-                <Button
-                    icon={'settings'}
-                    minimal={true}
-                    large={true}
-                    active={view === 'settings'}
-                    onClick={() => props.setGraphView('settings')}/>
-            </Tooltip>
-            <Tooltip
-                content={<span>Projections and Layout</span>}
-                hoverOpenDelay={500}
-                intent={Intent.PRIMARY}
-                position={Position.RIGHT}>
-                <Button
-                    active={view === 'layout'}
-                    icon={'layout-auto'}
-                    minimal={true}
-                    large={true}
-                    onClick={() => props.setGraphView('layout')}/>
-            </Tooltip>
-            <Tooltip
-                content={<span>Node Styling</span>}
-                hoverOpenDelay={500}
-                intent={Intent.PRIMARY}
-                position={Position.RIGHT}>
-                <Button
-                    active={view === 'node'}
-                    icon={'heatmap'}
-                    minimal={true}
-                    large={true}
-                    onClick={() => props.setGraphView('node')}/>
-            </Tooltip>
-            <Tooltip
-                content={<span>Edge Styling</span>}
-                hoverOpenDelay={500}
-                intent={Intent.PRIMARY}
-                position={Position.RIGHT}>
-                <Button
-                    active={view === 'edge'}
-                    icon={'flows'}
-                    minimal={true}
-                    large={true}
-                    onClick={() => props.setGraphView('edge')}/>
-            </Tooltip>
+            <SidebarButton
+                active={view === 'data'}
+                click={() => props.setGraphView('data')}
+                icon={'list'}
+                text={'Data and Projections'}/>
+            <SidebarButton
+                active={view === 'layout'}
+                click={() => props.setGraphView('layout')}
+                icon={'layout-auto'}
+                text={'Layout'}/>
+            <SidebarButton
+                active={view === 'node'}
+                click={() => props.setGraphView('node')}
+                icon={'heatmap'}
+                text={'Node Styling'}/>
+            <SidebarButton
+                active={view === 'edge'}
+                click={() => props.setGraphView('edge')}
+                icon={'flows'}
+                text={'Edge Styling'}/>
+            <SidebarButton
+                active={view === 'settings'}
+                click={() => props.setGraphView('settings')}
+                icon={'settings'}
+                text={'Graph Settings'}/>
         </>
     );
 

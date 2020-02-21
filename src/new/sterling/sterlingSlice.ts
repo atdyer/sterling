@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 // Sterling view types
 export type MainView = 'graph' | 'table';
 export type TableView = 'settings' | 'evaluator' | null;
-export type GraphView = 'settings' | 'layout' | 'node' | 'edge' | 'evaluator' | null;
+export type GraphView = 'data' | 'layout' | 'node' | 'edge' | 'settings' | 'evaluator' | null;
 
 // Sterling state
 export interface SterlingState {
@@ -24,7 +24,9 @@ const sterlingSlice = createSlice({
     reducers: {
 
         setGraphView (state, action: PayloadAction<GraphView>) {
-            state.graphView = action.payload;
+            state.graphView = action.payload === state.graphView
+                ? null
+                : action.payload;
         },
 
         setMainView (state, action: PayloadAction<MainView>) {
@@ -32,7 +34,9 @@ const sterlingSlice = createSlice({
         },
 
         setTableView (state, action: PayloadAction<TableView>) {
-            state.tableView = action.payload;
+            state.tableView = action.payload === state.tableView
+                ? null
+                : action.payload;
         }
 
     }

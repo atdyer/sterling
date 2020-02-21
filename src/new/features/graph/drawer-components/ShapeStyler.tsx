@@ -37,7 +37,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                     hasBackdrop={true}
                     usePortal={true}
                     modifiers={COLOR_POPPER_MODIFIERS}
-                    position={Position.RIGHT}>
+                    position={Position.LEFT}>
                     <Button
                         style={{
                             backgroundColor: background(fill),
@@ -57,7 +57,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                     hasBackdrop={true}
                     usePortal={true}
                     modifiers={COLOR_POPPER_MODIFIERS}
-                    position={Position.RIGHT}>
+                    position={Position.LEFT}>
                     <Button
                         style={{
                             backgroundColor: background(stroke),

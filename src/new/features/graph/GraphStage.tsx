@@ -1,6 +1,9 @@
-import { Node, NodeStyle } from '@atdyer/graph-js';
-import { cloneLabelStyle } from '@atdyer/graph-js/dist/styles/LabelStyle';
-import { cloneShapeStyle } from '@atdyer/graph-js/dist/styles/ShapeStyle';
+import {
+    cloneLabelStyle,
+    cloneShapeStyle,
+    Node,
+    NodeStyle
+} from '@atdyer/graph-js';
 import { AlloyAtom, AlloySignature } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
@@ -8,8 +11,11 @@ import { RootState } from '../../rootReducer';
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
+    graph: state.graphSlice.graphSlice.graph,
     instance: state.alloySlice.instance,
-    settings: state.graphSlice
+    labels: state.graphSlice.nodeStylingSlice.labels,
+    shapes: state.graphSlice.nodeStylingSlice.shapes,
+    settings: state.graphSlice.graphSettingsSlice
 });
 
 // Create connector
@@ -33,7 +39,7 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     componentDidMount (): void {
 
-        this.props.settings.graph.canvas(this._ref!);
+        this.props.graph.canvas(this._ref!);
 
     }
 
@@ -44,9 +50,10 @@ class GraphStage extends React.Component<GraphStageProps> {
     componentDidUpdate (): void {
 
         const instance = this.props.instance;
-        const graph = this.props.settings.graph;
-        const shapes = this.props.settings.shapes;
-        const nodeLabels = this.props.settings.nodeLabels;
+        const graph = this.props.graph;
+        const shapes = this.props.shapes;
+        const nodeLabels = this.props.labels;
+        const settings = this.props.settings;
 
         if (instance) {
 
@@ -84,6 +91,8 @@ class GraphStage extends React.Component<GraphStageProps> {
             graph.nodes([]);
         }
 
+        graph.axesVisible(settings.axesVisible);
+        graph.gridVisible(settings.gridVisible);
         graph.update();
 
     }

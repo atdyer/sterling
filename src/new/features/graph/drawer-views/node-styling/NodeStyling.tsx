@@ -1,30 +1,31 @@
 import { NonIdealState, Tree } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { RootState } from '../../../rootReducer';
-import SterlingDrawer from '../../../sterling/SterlingDrawer';
-import LabelStyler from '../drawer-components/LabelStyler';
-import ShapeSelector from '../drawer-components/ShapeSelector';
-import ShapeStyler from '../drawer-components/ShapeStyler';
+import { RootState } from '../../../../rootReducer';
+import SterlingDrawer from '../../../../sterling/SterlingDrawer';
+import LabelStyler from '../../drawer-components/LabelStyler';
+import ShapeSelector from '../../drawer-components/ShapeSelector';
+import ShapeStyler from '../../drawer-components/ShapeStyler';
 import {
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,
     setFill,
     setHeight,
-    setNodeLabelColor,
-    setNodeLabelSize,
+    setLabelColor,
+    setLabelSize,
     setRadius,
     setShape,
     setStroke,
     setStrokeWidth,
-    setWidth
-} from '../graphSlice';
-import { mapTreeToNodes } from '../graphTypes';
+    setWidth,
+    toggleCollapseNodeStyle
+} from '../../drawer-views/node-styling/nodeStylingSlice';
+import { mapTreeToNodes } from '../../graphTypes';
 
 // Map redux state to node styling props
 const mapState = (state: RootState) => ({
-    ...state.graphSlice
+    ...state.graphSlice.nodeStylingSlice
 });
 
 // Actions
@@ -34,13 +35,14 @@ const mapDispatch = {
     selectTreeNode,
     setFill,
     setHeight,
-    setNodeLabelColor,
-    setNodeLabelSize,
+    setLabelColor,
+    setLabelSize,
     setRadius,
     setShape,
     setStroke,
     setStrokeWidth,
-    setWidth
+    setWidth,
+    toggleCollapseNodeStyle
 };
 
 // Create connector
@@ -53,7 +55,7 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
 
     const selected = props.selected;
     const shape = selected ? props.shapes.get(selected) || {} : {};
-    const label = selected ? props.nodeLabels.get(selected) || {} : {};
+    const label = selected ? props.labels.get(selected) || {} : {};
     const tree = mapTreeToNodes(props.signatureTree, props.collapsed, selected);
     const fill = shape ? shape.fill : undefined;
     const stroke = shape ? shape.stroke : undefined;
@@ -70,8 +72,8 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
 
     return (
         <SterlingDrawer.Section
-            collapsed={false}
-            onToggle={() => {}}
+            collapsed={props.collapseNodeStyle}
+            onToggle={props.toggleCollapseNodeStyle}
             title={'Node Styling'}>
             <Tree
                 contents={[tree]}
@@ -101,8 +103,8 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
                             <LabelStyler
                                 color={labelColor}
                                 size={labelSize}
-                                onChangeColor={props.setNodeLabelColor}
-                                onChangeSize={props.setNodeLabelSize}/>
+                                onChangeColor={props.setLabelColor}
+                                onChangeSize={props.setLabelSize}/>
                         </>
                     )
                     : (

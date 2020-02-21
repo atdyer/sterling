@@ -40,7 +40,7 @@ const LabelStyler: React.FunctionComponent<ILabelStyle> = props => {
                     hasBackdrop={true}
                     usePortal={true}
                     modifiers={COLOR_POPPER_MODIFIERS}
-                    position={Position.RIGHT}>
+                    position={Position.LEFT}>
                     <Button
                         style={{
                             backgroundColor: background(props.color),

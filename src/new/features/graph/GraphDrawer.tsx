@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
-import LayoutAndProjections from './drawer-views/LayoutAndProjections';
-import NodeStyling from './drawer-views/NodeStyling';
+import GraphSettings from './drawer-views/graph-settings/GraphSettings';
+import LayoutAndProjections from './drawer-views/layout/Layout';
+import NodeStyling from './drawer-views/node-styling/NodeStyling';
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
@@ -20,6 +21,7 @@ const GraphDrawer: React.FunctionComponent<GraphStageProps> = props => {
 
     if (props.view === 'layout') return <LayoutAndProjections/>;
     if (props.view === 'node') return <NodeStyling/>;
+    if (props.view === 'settings') return <GraphSettings/>;
 
     return null;
 };
