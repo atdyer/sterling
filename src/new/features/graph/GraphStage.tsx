@@ -4,6 +4,7 @@ import {
     Node,
     NodeStyle
 } from '@atdyer/graph-js';
+import { NonIdealState } from '@blueprintjs/core';
 import { AlloyAtom, AlloySignature } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
@@ -11,11 +12,14 @@ import { RootState } from '../../rootReducer';
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
+    description: state.sterlingSlice.welcomeDescription,
+    edges: state.graphSlice.dataSlice.edges,
     graph: state.graphSlice.graphSlice.graph,
     instance: state.alloySlice.instance,
     labels: state.graphSlice.nodeStylingSlice.labels,
     shapes: state.graphSlice.nodeStylingSlice.shapes,
-    settings: state.graphSlice.graphSettingsSlice
+    settings: state.graphSlice.graphSettingsSlice,
+    title: state.sterlingSlice.welcomeTitle
 });
 
 // Create connector
@@ -27,19 +31,20 @@ type GraphStageProps = ConnectedProps<typeof connector>;
 // The graph stage component
 class GraphStage extends React.Component<GraphStageProps> {
 
-    private _ref: HTMLCanvasElement | null;
+    private _ref: React.RefObject<HTMLCanvasElement>;
 
     constructor (props: GraphStageProps) {
 
         super(props);
 
-        this._ref = null;
+        this._ref = React.createRef<HTMLCanvasElement>();
 
     }
 
     componentDidMount (): void {
 
-        this.props.graph.canvas(this._ref!);
+        const canvas = this._ref.current;
+        if (canvas) this.props.graph.canvas(canvas);
 
     }
 
@@ -54,6 +59,7 @@ class GraphStage extends React.Component<GraphStageProps> {
         const shapes = this.props.shapes;
         const nodeLabels = this.props.labels;
         const settings = this.props.settings;
+        const edges = this.props.edges;
 
         if (instance) {
 
@@ -61,6 +67,7 @@ class GraphStage extends React.Component<GraphStageProps> {
             const oldnodes = graph.nodes();
             const newnodes = mergeAtomsToNodes(oldnodes, instance.atoms());
             graph.nodes(newnodes);
+            graph.edges(edges);
 
             // Create the node styles
             const univ = instance.signatures().find(sig => sig.id() === 'univ');
@@ -89,19 +96,28 @@ class GraphStage extends React.Component<GraphStageProps> {
 
         } else {
             graph.nodes([]);
+            graph.edges([]);
         }
 
         graph.axesVisible(settings.axesVisible);
         graph.gridVisible(settings.gridVisible);
+
+        const canvas = this._ref.current;
+        if (canvas) this.props.graph.canvas(canvas);
         graph.update();
 
     }
 
     render (): React.ReactNode {
 
-        return (
-            <canvas className={'graph'} ref={ref => this._ref = ref}/>
-        );
+        const props = this.props;
+
+        return this.props.instance
+            ? <canvas className={'graph'} ref={this._ref}/>
+            : <NonIdealState
+                title={props.title}
+                description={props.description}
+                icon={'graph'}/>;
 
     }
 

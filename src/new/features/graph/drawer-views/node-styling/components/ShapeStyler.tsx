@@ -10,9 +10,9 @@ import { TwitterPicker } from 'react-color';
 import {
     background,
     foreground,
-    COLOR_POPPER_MODIFIERS,
-    DEFAULT_POPPER_COLORS
-} from './util';
+    POPPER_MODIFIERS,
+    DEFAULT_COLORS
+} from '../../../util';
 
 
 
@@ -36,7 +36,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
-                    modifiers={COLOR_POPPER_MODIFIERS}
+                    modifiers={POPPER_MODIFIERS}
                     position={Position.LEFT}>
                     <Button
                         style={{
@@ -47,7 +47,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                         minimal={true}/>
                     <TwitterPicker
                         color={background(fill)}
-                        colors={DEFAULT_POPPER_COLORS}
+                        colors={DEFAULT_COLORS}
                         onChange={color => props.onChangeFill(color.hex)}
                         triangle={'hide'}/>
                 </Popover>
@@ -56,7 +56,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
-                    modifiers={COLOR_POPPER_MODIFIERS}
+                    modifiers={POPPER_MODIFIERS}
                     position={Position.LEFT}>
                     <Button
                         style={{
@@ -67,7 +67,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                         minimal={true}/>
                     <TwitterPicker
                         color={background(stroke)}
-                        colors={DEFAULT_POPPER_COLORS}
+                        colors={DEFAULT_COLORS}
                         onChange={color => props.onChangeStroke(color.hex)}
                         triangle={'hide'}/>
                 </Popover>

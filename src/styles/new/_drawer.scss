@@ -48,17 +48,17 @@
         flex: 1 0 auto;
       }
 
-      .bp3-numeric-input {
-        //flex: 1 1 auto;
-        //width: 100px;
-      }
-
       .bp3-popover {
         width: 100%;
       }
 
       .bp3-transition-container {
         width: calc(100% - 42px);
+      }
+
+      .centered {
+        display: flex;
+        justify-content: center;
       }
 
       input.bp3-input {

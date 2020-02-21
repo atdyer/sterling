@@ -1,4 +1,4 @@
-import { Card } from '@blueprintjs/core';
+import { Card, NonIdealState } from '@blueprintjs/core';
 import { AlloyField, AlloySignature, AlloySkolem, filtering } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
@@ -19,7 +19,10 @@ import {
 
 // Map redux state to table settings props
 const mapState = (state: RootState) => ({
-    settings: state.tableSlice
+    ...state.tableSlice,
+    description: state.sterlingSlice.welcomeDescription,
+    instance: state.alloySlice.instance,
+    title: state.sterlingSlice.welcomeTitle
 });
 
 // Create connector
@@ -31,28 +34,33 @@ type TableStageProps = ConnectedProps<typeof connector>;
 // The table stage component
 const TableStage: React.FunctionComponent<TableStageProps> = props => {
 
-    const settings = props.settings;
+    if (!props.instance) return (
+        <NonIdealState
+            title={props.title}
+            description={props.description}
+            icon={'th'}/>
+    );
 
-    const alignment = getAlignClass(settings.alignment);
-    const direction = getLayoutClass(settings.layoutDirection);
-    const nameFunction = buildNameFunction(settings.removeThis);
-    const primarySort = buildSortFunction(settings.primarySort, nameFunction);
-    const secondSort = buildSortFunction(settings.secondarySort, nameFunction);
-    const type = settings.tablesType;
+    const alignment = getAlignClass(props.alignment);
+    const direction = getLayoutClass(props.layoutDirection);
+    const nameFunction = buildNameFunction(props.removeThis);
+    const primarySort = buildSortFunction(props.primarySort, nameFunction);
+    const secondSort = buildSortFunction(props.secondarySort, nameFunction);
+    const type = props.tablesType;
 
-    let data = type === TablesType.All ? settings.data :
-        type === TablesType.Signatures ? settings.data.filter(filtering.keepSignatures) :
-        type === TablesType.Fields ? settings.data.filter(filtering.keepFields) :
-        type === TablesType.Skolems ? settings.data.filter(filtering.keepSkolems) :
-        type === TablesType.Select ? settings.dataSelected.slice() : [];
+    let data = type === TablesType.All ? props.data :
+        type === TablesType.Signatures ? props.data.filter(filtering.keepSignatures) :
+        type === TablesType.Fields ? props.data.filter(filtering.keepFields) :
+        type === TablesType.Skolems ? props.data.filter(filtering.keepSkolems) :
+        type === TablesType.Select ? props.dataSelected.slice() : [];
 
     const pass = () => true;
     data = type === TablesType.Select
         ? data
         : data
-            .filter(settings.removeBuiltin ? filtering.removeBuiltins : pass)
-            .filter(settings.removeEmpty ? filtering.removeEmptys : pass)
-            .filter(settings.highlightSkolems ? filtering.removeSkolems : pass);
+            .filter(props.removeBuiltin ? filtering.removeBuiltins : pass)
+            .filter(props.removeEmpty ? filtering.removeEmptys : pass)
+            .filter(props.highlightSkolems ? filtering.removeSkolems : pass);
 
     data = data
         .sort(secondSort)
@@ -68,16 +76,16 @@ const TableStage: React.FunctionComponent<TableStageProps> = props => {
                         {
                             item.expressionType() === 'signature' ?
                                 SignatureHTMLTable({
-                                    highlightSkolems: settings.highlightSkolems,
+                                    highlightSkolems: props.highlightSkolems,
                                     signature: item as AlloySignature,
-                                    skolemColors: settings.skolemColors
+                                    skolemColors: props.skolemColors
                                 }) :
                             item.expressionType() === 'field' ?
                                 FieldHTMLTable({
                                     field: item as AlloyField,
-                                    highlightSkolems: settings.highlightSkolems,
+                                    highlightSkolems: props.highlightSkolems,
                                     nameFunction: nameFunction,
-                                    skolemColors: settings.skolemColors
+                                    skolemColors: props.skolemColors
                                 }) :
                             item.expressionType() === 'skolem' ?
                                 SkolemHTMLTable({

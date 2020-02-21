@@ -10,12 +10,16 @@ export interface SterlingState {
     mainView: MainView
     tableView: TableView
     graphView: GraphView
+    welcomeDescription: string
+    welcomeTitle: string
 }
 
 const initialState: SterlingState = {
     mainView: 'graph',
     tableView: 'settings',
-    graphView: 'settings'
+    graphView: 'data',
+    welcomeDescription: 'Use Alloy to generate an instance.',
+    welcomeTitle: 'Welcome to Sterling'
 };
 
 const sterlingSlice = createSlice({

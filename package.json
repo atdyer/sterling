@@ -12,6 +12,7 @@
     "@testing-library/react": "9.4.0",
     "@testing-library/user-event": "7.2.1",
     "@types/cytoscape": "3.8.7",
+    "@types/d3-color": "1.2.2",
     "@types/jest": "24.9.0",
     "@types/node": "12.12.25",
     "@types/react": "16.9.18",
@@ -21,6 +22,7 @@
     "@types/redux": "^3.6.0",
     "alloy-ts": "1.4.1",
     "cytoscape": "3.13.0",
+    "d3-color": "1.4.0",
     "immutable": "4.0.0-rc.12",
     "node-sass": "4.13.1",
     "normalize.css": "8.0.1",
@@ -31,6 +33,7 @@
     "react-scripts": "3.3.1",
     "react-split-pane": "0.1.89",
     "redux": "^4.0.5",
+    "ts-is-present": "1.1.1",
     "typescript": "3.7.5"
   },
   "scripts": {

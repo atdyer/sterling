@@ -3,9 +3,9 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
-import LabelStyler from '../../drawer-components/LabelStyler';
-import ShapeSelector from '../../drawer-components/ShapeSelector';
-import ShapeStyler from '../../drawer-components/ShapeStyler';
+import LabelStyler from './components/LabelStyler';
+import ShapeSelector from './components/ShapeSelector';
+import ShapeStyler from './components/ShapeStyler';
 import {
     collapseTreeNode,
     expandTreeNode,
@@ -20,7 +20,7 @@ import {
     setStrokeWidth,
     setWidth,
     toggleCollapseNodeStyle
-} from '../../drawer-views/node-styling/nodeStylingSlice';
+} from './nodeStylingSlice';
 import { mapTreeToNodes } from '../../graphTypes';
 
 // Map redux state to node styling props

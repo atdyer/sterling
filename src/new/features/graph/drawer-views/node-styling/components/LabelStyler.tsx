@@ -9,10 +9,10 @@ import React from 'react';
 import { TwitterPicker } from 'react-color';
 import {
     background,
-    COLOR_POPPER_MODIFIERS,
-    DEFAULT_POPPER_COLORS,
+    POPPER_MODIFIERS,
+    DEFAULT_COLORS,
     foreground
-} from './util';
+} from '../../../util';
 
 interface ILabelStyle {
     color?: string
@@ -39,7 +39,7 @@ const LabelStyler: React.FunctionComponent<ILabelStyle> = props => {
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
-                    modifiers={COLOR_POPPER_MODIFIERS}
+                    modifiers={POPPER_MODIFIERS}
                     position={Position.LEFT}>
                     <Button
                         style={{
@@ -50,7 +50,7 @@ const LabelStyler: React.FunctionComponent<ILabelStyle> = props => {
                         minimal={true}/>
                     <TwitterPicker
                         color={background(props.color)}
-                        colors={DEFAULT_POPPER_COLORS}
+                        colors={DEFAULT_COLORS}
                         onChange={color => props.onChangeColor(color.hex)}
                         triangle={'hide'}/>
                 </Popover>
