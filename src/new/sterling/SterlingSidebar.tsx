@@ -109,7 +109,7 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
             <SidebarButton
                 active={view === 'node'}
                 click={() => props.setGraphView('node')}
-                icon={'heatmap'}
+                icon={'group-objects'}
                 text={'Node Styling'}/>
             <SidebarButton
                 active={view === 'edge'}

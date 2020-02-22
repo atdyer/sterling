@@ -1,7 +1,12 @@
-import { ITreeNode } from '@blueprintjs/core';
-import { Map } from 'immutable'
+import { IconName, ITreeNode, MaybeElement } from '@blueprintjs/core';
+import { Map } from 'immutable';
 
-export type Tree = { id: string, children: Tree[] }
+export type Tree = {
+    id: string
+    icon?: IconName | MaybeElement
+    label?: string | JSX.Element
+    children: Tree[]
+}
 
 function mapTreeToNodes (tree: Tree | null, collapsed: Map<string, boolean>, selected: string | null): ITreeNode {
 
@@ -15,8 +20,8 @@ function mapTreeToNodes (tree: Tree | null, collapsed: Map<string, boolean>, sel
         const childNodes = t.children.map(populate);
         return {
             id: t.id,
-            label: t.id,
-            icon: 'group-objects',
+            label: t.label ? t.label : t.id,
+            icon: t.icon,
             isExpanded: !collapsed.get(t.id),
             isSelected: t.id === selected,
             hasCaret: !!childNodes.length,

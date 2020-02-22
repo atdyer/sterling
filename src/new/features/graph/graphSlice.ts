@@ -2,6 +2,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 import { Graph } from '@atdyer/graph-js';
 import { createSlice } from '@reduxjs/toolkit';
 import dataSlice from './drawer-views/data/dataSlice';
+import edgeStylingSlice from './drawer-views/edge-styling/edgeStylingSlice';
 import nodeStylingSlice from './drawer-views/node-styling/nodeStylingSlice';
 import graphSettingsSlice from './drawer-views/graph-settings/graphSettingsSlice';
 
@@ -21,6 +22,7 @@ const graphSlice = createSlice({
 
 export default combineReducers({
     dataSlice,
+    edgeStylingSlice,
     graphSlice: graphSlice.reducer,
     graphSettingsSlice,
     nodeStylingSlice

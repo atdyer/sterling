@@ -48,10 +48,6 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     }
 
-    componentWillUnmount (): void {
-
-    }
-
     componentDidUpdate (): void {
 
         const instance = this.props.instance;
@@ -128,11 +124,14 @@ function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
     return atoms.map(atom => {
         const id = atom.name();
         const existing = nodes.find(node => node.id === id);
+        const labels = atom.skolems().map(skolem => skolem.id());
         if (existing) {
+            existing.labels = labels.length ? labels : undefined;
             return existing;
         } else {
             return {
                 id: id,
+                labels: labels.length ? labels : undefined,
                 x: 0,
                 y: 0
             }

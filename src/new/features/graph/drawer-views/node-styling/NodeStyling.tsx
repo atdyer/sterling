@@ -3,6 +3,7 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
+import { mapTreeToNodes } from '../../graphTypes';
 import LabelStyler from './components/LabelStyler';
 import ShapeSelector from './components/ShapeSelector';
 import ShapeStyler from './components/ShapeStyler';
@@ -21,7 +22,7 @@ import {
     setWidth,
     toggleCollapseNodeStyle
 } from './nodeStylingSlice';
-import { mapTreeToNodes } from '../../graphTypes';
+
 
 // Map redux state to node styling props
 const mapState = (state: RootState) => ({
@@ -56,7 +57,7 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
     const selected = props.selected;
     const shape = selected ? props.shapes.get(selected) || {} : {};
     const label = selected ? props.labels.get(selected) || {} : {};
-    const tree = mapTreeToNodes(props.signatureTree, props.collapsed, selected);
+    const tree = mapTreeToNodes(props.nodeTree, props.collapsed, selected);
     const fill = shape ? shape.fill : undefined;
     const stroke = shape ? shape.stroke : undefined;
     const strokeWidth = shape ? shape.strokeWidth : undefined;

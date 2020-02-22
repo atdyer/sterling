@@ -8,27 +8,28 @@ import {
     ShapeStyle
 } from '@atdyer/graph-js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlloyInstance, AlloySignature } from 'alloy-ts';
+import { AlloyInstance } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../../../alloy/alloySlice';
 import { Tree } from '../../graphTypes';
+import { buildTypeTree } from './nodeTypes';
 
 export interface NodeStylingState {
     collapsed: Map<string, boolean>
     collapseNodeStyle: boolean
     labels: Map<string, LabelStyle>
+    nodeTree: Tree | null
     selected: string | null
     shapes: Map<string, ShapeStyle>
-    signatureTree: Tree | null
 }
 
 const initialState: NodeStylingState = {
     collapsed: Map(),
     collapseNodeStyle: false,
     labels: Map(),
+    nodeTree: null,
     selected: null,
-    shapes: Map(),
-    signatureTree: null
+    shapes: Map()
 };
 
 const nodeStylingSlice = createSlice({
@@ -153,26 +154,29 @@ const nodeStylingSlice = createSlice({
 
             if (instance !== null) {
 
+                const signatures = instance.signatures();
+                const univ = signatures.find(sig => sig.id() === 'univ');
+
                 // Build the signature tree using only IDs
-                state.signatureTree = buildSignatureIDTree(instance);
+                state.nodeTree = buildTypeTree(univ);
 
                 // For all maps, keeps existing signatures, get rid of ones that
                 // no longer exist, and add new ones
-                state.collapsed = Map(instance.signatures().map(sig => {
+                state.collapsed = Map(signatures.map(sig => {
                     const id = sig.id();
                     return state.collapsed.has(id)
                         ? [id, !!state.collapsed.get(id)]
                         : [id, false];
                 }));
 
-                state.labels = Map(instance.signatures().map(sig => {
+                state.labels = Map(signatures.map(sig => {
                     const id = sig.id();
                     return state.labels.has(id)
                         ? [id, cloneLabelStyle(state.labels.get(id)!)]
                         : [id, {}];
                 }));
 
-                state.shapes = Map(instance.signatures().map(sig => {
+                state.shapes = Map(signatures.map(sig => {
                     const id = sig.id();
                     return state.shapes.has(id)
                         ? [id, cloneShapeStyle(state.shapes.get(id)!)]
@@ -186,9 +190,9 @@ const nodeStylingSlice = createSlice({
 
             } else {
 
-                state.signatureTree = null;
                 state.collapsed = Map();
                 state.labels = Map();
+                state.nodeTree = null;
                 state.shapes = Map();
                 state.selected = null;
 
@@ -213,24 +217,3 @@ export const {
     toggleCollapseNodeStyle
 } = nodeStylingSlice.actions;
 export default nodeStylingSlice.reducer;
-
-
-function buildSignatureIDTree (instance: AlloyInstance): Tree | null {
-
-    const univ = instance.signatures().find(sig => sig.id() === 'univ');
-
-    if (!univ) return null;
-
-    const populate = (sig: AlloySignature): Tree => {
-
-        const children = sig.subTypes().map(populate);
-        return {
-            id: sig.id(),
-            children
-        };
-
-    };
-
-    return populate(univ);
-
-}
