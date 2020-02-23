@@ -1,16 +1,18 @@
 import {
-    Button, ButtonGroup,
-    Divider,
-    NonIdealState,
-    Switch,
+    Alignment,
+    Button,
+    ButtonGroup,
+    Divider, FormGroup,
+    NonIdealState, Switch,
+    Tooltip,
     Tree
 } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
-import { mapTreeToNodes } from '../../graphTypes';
 import LabelStyler from '../../drawer-components/LabelStyler';
+import { mapTreeToNodes } from '../../graphTypes';
 import ShapeSelector from './components/ShapeSelector';
 import ShapeStyler from './components/ShapeStyler';
 import {
@@ -29,6 +31,7 @@ import {
     setStrokeWidth,
     setWidth,
     toggleCollapseNodeStyle,
+    toggleHideDisconnected,
     toggleHideEmptySets
 } from './nodeStylingSlice';
 
@@ -54,6 +57,7 @@ const mapDispatch = {
     setStrokeWidth,
     setWidth,
     toggleCollapseNodeStyle,
+    toggleHideDisconnected,
     toggleHideEmptySets
 };
 
@@ -66,13 +70,20 @@ type NodeStylingProps = ConnectedProps<typeof connector>;
 const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
 
     const selected = props.selected;
+
+    // Hide disconnected
+    const hideDisconnected = props.selected
+        ? props.hideDisconnected.get(props.selected)
+        : false;
+
+    // Shape properties
     const shape = selected ? props.shapes.get(selected) || {} : {};
-    const label = selected ? props.labels.get(selected) || {} : {};
-    const tree = mapTreeToNodes(props.nodeTree, props.collapsed, selected);
     const fill = shape ? shape.fill : undefined;
     const stroke = shape ? shape.stroke : undefined;
     const strokeWidth = shape ? shape.strokeWidth : undefined;
 
+    // Label properties
+    const label = selected ? props.labels.get(selected) || {} : {};
     const labelColor = label ? label.color : undefined;
     const font = label ? label.font : undefined;
     const match = font ? font.match(/(\d*)px/) : [];
@@ -82,15 +93,25 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
             : undefined
         : undefined;
 
+    // Tree properties
+    const tree = mapTreeToNodes(props.nodeTree, props.collapsed, selected);
+    const hide = props.hideEmptySets;
+    tree.secondaryLabel = (
+        <Tooltip
+            content={hide ? 'Show Empty Sets' : 'Hide Empty Sets'}>
+            <Button
+                icon={hide ? 'eye-off' : 'eye-open'}
+                minimal={true}
+                onClick={props.toggleHideEmptySets}/>
+        </Tooltip>
+    );
+
+
     return (
         <SterlingDrawer.Section
             collapsed={props.collapseNodeStyle}
             onToggle={props.toggleCollapseNodeStyle}
             title={'Node Styling'}>
-            <Switch
-                checked={props.hideEmptySets}
-                label={'Hide Empty Sets'}
-                onChange={props.toggleHideEmptySets}/>
             <Tree
                 contents={[tree]}
                 onNodeClick={node => props.selectTreeNode(node.id.toString())}
@@ -102,6 +123,15 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
                 selected
                     ? (
                         <>
+                            <FormGroup
+                                contentClassName={'fill'}
+                                inline={true}>
+                                <Switch
+                                    alignIndicator={Alignment.RIGHT}
+                                    checked={hideDisconnected}
+                                    onChange={props.toggleHideDisconnected}
+                                    label={'Hide Disconnected Nodes'}/>
+                            </FormGroup>
                             <ShapeSelector
                                 shape={shape}
                                 onSetHeight={props.setHeight}

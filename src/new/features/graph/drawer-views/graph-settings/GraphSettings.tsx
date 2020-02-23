@@ -30,12 +30,12 @@ const GraphSettings: React.FunctionComponent<GraphSettingsProps> = props => (
         title={'Graph Settings'}>
         <FormGroup>
             <Switch
-                alignIndicator={Alignment.LEFT}
+                alignIndicator={Alignment.RIGHT}
                 checked={props.axesVisible}
                 label={'Display Axes'}
                 onChange={props.toggleAxesVisible}/>
             <Switch
-                alignIndicator={Alignment.LEFT}
+                alignIndicator={Alignment.RIGHT}
                 checked={props.gridVisible}
                 label={'Display Grid'}
                 onChange={props.toggleGridVisible}/>

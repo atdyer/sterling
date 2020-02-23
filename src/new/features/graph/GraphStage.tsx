@@ -1,6 +1,7 @@
 import {
     cloneLabelStyle,
     cloneShapeStyle,
+    Edge,
     EdgeStyle,
     Node,
     NodeStyle
@@ -9,6 +10,7 @@ import { NonIdealState } from '@blueprintjs/core';
 import { AlloyAtom, AlloyField, AlloySignature, AlloySkolem } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
+import { isDefined } from 'ts-is-present';
 import { RootState } from '../../rootReducer';
 
 const DEFAULT_EDGE_STYLES: EdgeStyle[] = [];
@@ -24,6 +26,7 @@ const mapState = (state: RootState) => ({
     edges: state.graphSlice.dataSlice.edges,
     edgeLabels: state.graphSlice.edgeStylingSlice.labelStyles,
     graph: state.graphSlice.graphSlice.graph,
+    hideDisconnected: state.graphSlice.nodeStylingSlice.hideDisconnected,
     instance: state.alloySlice.instance,
     nodeLabels: state.graphSlice.nodeStylingSlice.labels,
     links: state.graphSlice.edgeStylingSlice.linkStyles,
@@ -42,12 +45,14 @@ type GraphStageProps = ConnectedProps<typeof connector>;
 class GraphStage extends React.Component<GraphStageProps> {
 
     private _ref: React.RefObject<HTMLCanvasElement>;
+    private _nodes: Node[];
 
     constructor (props: GraphStageProps) {
 
         super(props);
 
         this._ref = React.createRef<HTMLCanvasElement>();
+        this._nodes = [];
 
     }
 
@@ -60,17 +65,23 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     componentDidUpdate (): void {
 
-        const instance = this.props.instance;
-        const graph = this.props.graph;
-        const settings = this.props.settings;
-        const edges = this.props.edges;
+        const props = this.props;
+        const instance = props.instance;
+        const graph = props.graph;
+        const settings = props.settings;
+        const edges = props.edges;
 
         if (instance) {
 
+            // Merge old nodes with current nodes
+            this._nodes = mergeAtomsToNodes(this._nodes, instance.atoms());
+
+            const nodes = props.hideDisconnected
+                ? this._buildConnectedNodes()
+                : this._nodes;
+
             // Set the nodes and edges
-            const oldnodes = graph.nodes();
-            const newnodes = mergeAtomsToNodes(oldnodes, instance.atoms());
-            graph.nodes(newnodes);
+            graph.nodes(nodes);
             graph.edges(edges);
 
             // Create the styles
@@ -103,6 +114,27 @@ class GraphStage extends React.Component<GraphStageProps> {
                 title={props.title}
                 description={props.description}
                 icon={'graph'}/>;
+
+    }
+
+    private _buildConnectedNodes (): Node[] {
+
+        const props = this.props;
+        const edges = props.edges;
+        const instance = props.instance;
+
+        if (!instance) return [];
+
+        // Create set of atoms that are eligible to be disconnected
+        const removeable = instance.atoms().map(atom => {
+            const type = atom.type().id();
+            const isSkolem = atom.skolems().some(skolem => skolem.arity() === 1);
+            return props.hideDisconnected.get(type) && !isSkolem
+                ? atom.name()
+                : undefined
+        }).filter(isDefined);
+
+        return removeDisconnected(this._nodes, edges, new Set(removeable));
 
     }
 
@@ -199,6 +231,21 @@ function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
             }
         }
     });
+
+}
+
+function removeDisconnected (nodes: Node[], edges: Edge[], removeable: Set<string>): Node[] {
+
+    const connected = new Set<string>();
+
+    edges.forEach(edge => {
+        connected.add(edge.source);
+        connected.add(edge.target);
+    });
+
+    return nodes.filter(node =>
+        connected.has(node.id)
+        || !removeable.has(node.id));
 
 }
 

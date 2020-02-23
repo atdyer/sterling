@@ -97,10 +97,10 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
     return (
         <>
             <SidebarButton
-                active={view === 'data'}
-                click={() => props.setGraphView('data')}
-                icon={'list'}
-                text={'Data and Projections'}/>
+                active={view === 'settings'}
+                click={() => props.setGraphView('settings')}
+                icon={'settings'}
+                text={'Graph Settings and Projections'}/>
             <SidebarButton
                 active={view === 'layout'}
                 click={() => props.setGraphView('layout')}
@@ -116,11 +116,6 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
                 click={() => props.setGraphView('edge')}
                 icon={'flows'}
                 text={'Edge Styling'}/>
-            <SidebarButton
-                active={view === 'settings'}
-                click={() => props.setGraphView('settings')}
-                icon={'settings'}
-                text={'Graph Settings'}/>
         </>
     );
 
@@ -128,18 +123,11 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
 
 const TableSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
     return (
-        <Tooltip
-            content={<span>View Settings</span>}
-            hoverOpenDelay={500}
-            intent={Intent.PRIMARY}
-            position={Position.RIGHT}>
-            <Button
-                icon={'settings'}
-                minimal={true}
-                large={true}
-                active={props.tableView === 'settings'}
-                onClick={() => props.setTableView('settings')}/>
-        </Tooltip>
+        <SidebarButton
+            active={props.tableView === 'settings'}
+            click={() => props.setTableView('settings')}
+            icon={'settings'}
+            text={'Table Settings'}/>
     );
 };
 

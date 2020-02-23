@@ -22,15 +22,11 @@ function buildFieldTree (fields: AlloyField[], hideEmpty: boolean): Tree | null 
 
 }
 
-function buildSkolemTree (skolems: AlloySkolem[], hideEmpty: boolean): Tree | null {
-
-    const skls = hideEmpty
-        ? skolems.filter(skolem => skolem.tuples().length)
-        : skolems;
+function buildSkolemTree (skolems: AlloySkolem[]): Tree | null {
 
     return {
         id: 'Skolems',
-        children: skls
+        children: skolems
             .map(skolem => {
                 return {
                     id: skolem.id(),

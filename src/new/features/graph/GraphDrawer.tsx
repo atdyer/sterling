@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
-import Data from './drawer-views/data/Data';
+import Projections from './drawer-views/data/components/Projections';
 import EdgeStyling from './drawer-views/edge-styling/EdgeStyling';
 import GraphSettings from './drawer-views/graph-settings/GraphSettings';
 import LayoutAndProjections from './drawer-views/layout/Layout';
@@ -21,11 +21,15 @@ type GraphStageProps = ConnectedProps<typeof connector>;
 // The graph settings component
 const GraphDrawer: React.FunctionComponent<GraphStageProps> = props => {
 
-    if (props.view === 'data') return <Data/>;
+    if (props.view === 'settings') return (
+        <>
+            <GraphSettings/>
+            <Projections/>
+        </>
+    );
     if (props.view === 'edge') return <EdgeStyling/>;
     if (props.view === 'layout') return <LayoutAndProjections/>;
     if (props.view === 'node') return <NodeStyling/>;
-    if (props.view === 'settings') return <GraphSettings/>;
 
     return null;
 };

@@ -15,7 +15,7 @@ export interface EdgeStylingState {
     collapsed: Map<string, boolean>
     collapseEdgeStyle: boolean
     fields: AlloyField[]
-    hideEmptyRelations: boolean
+    hideEmptyFields: boolean
     labelStyles: Map<string, LabelStyle>
     linkStyles: Map<string, LinkStyle>
     selected: string | null
@@ -31,7 +31,7 @@ const initialState: EdgeStylingState = {
     }),
     collapseEdgeStyle: false,
     fields: [],
-    hideEmptyRelations: true,
+    hideEmptyFields: true,
     labelStyles: Map(),
     linkStyles: Map(),
     selected: null,
@@ -123,10 +123,9 @@ const edgeStylingSlice = createSlice({
         toggleCollapseEdgeStyle (state) {
             state.collapseEdgeStyle = !state.collapseEdgeStyle;
         },
-        toggleHideEmptyRelations (state) {
-            state.hideEmptyRelations = !state.hideEmptyRelations;
-            state.treeField = buildFieldTree(state.fields as AlloyField[], state.hideEmptyRelations);
-            state.treeSkolem = buildSkolemTree(state.skolems as AlloySkolem[], state.hideEmptyRelations);
+        toggleHideEmptyFields (state) {
+            state.hideEmptyFields = !state.hideEmptyFields;
+            state.treeField = buildFieldTree(state.fields as AlloyField[], state.hideEmptyFields);
         }
     },
     extraReducers: builder =>
@@ -142,8 +141,8 @@ const edgeStylingSlice = createSlice({
 
                 state.fields = fields;
                 state.skolems = skolems;
-                state.treeField = buildFieldTree(fields, state.hideEmptyRelations);
-                state.treeSkolem = buildSkolemTree(skolems, state.hideEmptyRelations);
+                state.treeField = buildFieldTree(fields, state.hideEmptyFields);
+                state.treeSkolem = buildSkolemTree(skolems);
 
                 state.labelStyles = Map(both.map(item => {
                     const id = item.id();
@@ -194,6 +193,6 @@ export const {
     setStroke,
     setStrokeWidth,
     toggleCollapseEdgeStyle,
-    toggleHideEmptyRelations
+    toggleHideEmptyFields
 } = edgeStylingSlice.actions;
 export default edgeStylingSlice.reducer;

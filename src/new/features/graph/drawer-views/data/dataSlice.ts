@@ -13,7 +13,10 @@ import { setInstance } from '../../../../alloy/alloySlice'
 
 export interface DataState {
     atoms: Map<string, string[]>
+    collapseExpressions: boolean
     collapseProjections: boolean
+    collapseRelations: boolean
+    collapseSignatures: boolean
     edges: Edge[]
     fields: List<AlloyField>
     projections: Map<string, string>
@@ -23,7 +26,10 @@ export interface DataState {
 
 const initialState: DataState = {
     atoms: Map(),
+    collapseExpressions: false,
     collapseProjections: false,
+    collapseRelations: false,
+    collapseSignatures: false,
     edges: [],
     fields: List(),
     projections: Map(),
@@ -101,8 +107,17 @@ const dataSlice = createSlice({
                 );
             }
         },
+        toggleCollapseExpressions (state) {
+            state.collapseExpressions = !state.collapseExpressions;
+        },
         toggleCollapseProjections (state) {
             state.collapseProjections = !state.collapseProjections
+        },
+        toggleCollapseRelations (state) {
+            state.collapseRelations = !state.collapseRelations;
+        },
+        toggleCollapseSignatures (state) {
+            state.collapseSignatures = !state.collapseSignatures;
         }
     },
     extraReducers: build =>
@@ -255,6 +270,9 @@ export const {
     previousAtom,
     removeProjection,
     setProjection,
-    toggleCollapseProjections
+    toggleCollapseExpressions,
+    toggleCollapseProjections,
+    toggleCollapseRelations,
+    toggleCollapseSignatures
 } = dataSlice.actions;
 export default dataSlice.reducer;

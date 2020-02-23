@@ -1,8 +1,9 @@
 import {
-    Button, ButtonGroup,
+    Button,
+    ButtonGroup,
     Divider,
     NonIdealState,
-    Switch,
+    Tooltip,
     Tree
 } from '@blueprintjs/core';
 import React from 'react';
@@ -23,7 +24,7 @@ import {
     setStroke,
     setStrokeWidth,
     toggleCollapseEdgeStyle,
-    toggleHideEmptyRelations
+    toggleHideEmptyFields
 } from './edgeStylingSlice';
 
 const mapState = (state: RootState) => ({
@@ -41,7 +42,7 @@ const mapDispatch = {
     setStroke,
     setStrokeWidth,
     toggleCollapseEdgeStyle,
-    toggleHideEmptyRelations
+    toggleHideEmptyFields
 };
 
 const connector = connect(mapState, mapDispatch);
@@ -51,18 +52,14 @@ type EdgeStylingProps = ConnectedProps<typeof connector>;
 const EdgeStyling: React.FunctionComponent<EdgeStylingProps> = props => {
 
     const selected = props.selected;
+
+    // Link properties
     const link = selected ? props.linkStyles.get(selected) || {} : {};
-    const label = selected ? props.labelStyles.get(selected) || {} : {};
-
-    const fieldTree = mapTreeToNodes(props.treeField, props.collapsed, selected);
-    const skolemTree = mapTreeToNodes(props.treeSkolem, props.collapsed, selected);
-    const isempty = fieldTree.id === 'error' && skolemTree.id === 'error';
-    const hasskolem = skolemTree.childNodes && skolemTree.childNodes.length;
-    const trees = (isempty || !hasskolem) ? [fieldTree] : [fieldTree, skolemTree];
-
     const stroke = link ? link.stroke : undefined;
     const strokeWidth = link ? link.strokeWidth : undefined;
 
+    // Label properties
+    const label = selected ? props.labelStyles.get(selected) || {} : {};
     const labelColor = label ? label.color : undefined;
     const font = label ? label.font : undefined;
     const match = font ? font.match(/(\d*)px/) : [];
@@ -72,16 +69,30 @@ const EdgeStyling: React.FunctionComponent<EdgeStylingProps> = props => {
             : undefined
         : undefined;
 
+    // Tree properties
+    const fieldTree = mapTreeToNodes(props.treeField, props.collapsed, selected);
+    const skolemTree = mapTreeToNodes(props.treeSkolem, props.collapsed, selected);
+    const isempty = fieldTree.id === 'error' && skolemTree.id === 'error';
+    const hasskolem = skolemTree.childNodes && skolemTree.childNodes.length;
+    const trees = (isempty || !hasskolem) ? [fieldTree] : [fieldTree, skolemTree];
+    const hideFld = props.hideEmptyFields;
+    fieldTree.secondaryLabel = (
+        <Tooltip
+            content={hideFld ? 'Show Empty Fields' : 'Hide Empty Fields'}>
+            <Button
+                icon={hideFld ? 'eye-off' : 'eye-open'}
+                minimal={true}
+                onClick={props.toggleHideEmptyFields}/>
+        </Tooltip>
+    );
+
+
     return (
         <>
             <SterlingDrawer.Section
                 collapsed={props.collapseEdgeStyle}
                 onToggle={props.toggleCollapseEdgeStyle}
                 title={'Edge Styling'}>
-                <Switch
-                    checked={props.hideEmptyRelations}
-                    label={'Hide Empty Relations'}
-                    onChange={props.toggleHideEmptyRelations}/>
                 <Tree
                     contents={trees}
                     onNodeClick={node => props.selectTreeNode(node.id.toString())}

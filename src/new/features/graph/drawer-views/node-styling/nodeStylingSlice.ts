@@ -17,6 +17,7 @@ import { buildTypeTree } from './nodeTypes';
 export interface NodeStylingState {
     collapsed: Map<string, boolean>
     collapseNodeStyle: boolean
+    hideDisconnected: Map<string, boolean>
     hideEmptySets: boolean
     labels: Map<string, LabelStyle>
     nodeTree: Tree | null
@@ -28,6 +29,7 @@ export interface NodeStylingState {
 const initialState: NodeStylingState = {
     collapsed: Map(),
     collapseNodeStyle: false,
+    hideDisconnected: Map(),
     hideEmptySets: true,
     labels: Map(),
     nodeTree: null,
@@ -183,6 +185,13 @@ const nodeStylingSlice = createSlice({
         toggleCollapseNodeStyle (state) {
             state.collapseNodeStyle = !state.collapseNodeStyle;
         },
+        toggleHideDisconnected (state) {
+            const selected = state.selected;
+            if (selected) {
+                const next = !state.hideDisconnected.get(selected);
+                state.hideDisconnected = state.hideDisconnected.set(selected, next);
+            }
+        },
         toggleHideEmptySets (state) {
             state.hideEmptySets = !state.hideEmptySets;
             state.nodeTree = buildTypeTree(state.univ as AlloySignature, state.hideEmptySets);
@@ -211,6 +220,13 @@ const nodeStylingSlice = createSlice({
                         : [id, false];
                 }));
 
+                state.hideDisconnected = Map(signatures.map(sig => {
+                    const id = sig.id();
+                    return state.hideDisconnected.has(id)
+                        ? [id, !!state.hideDisconnected.get(id)]
+                        : [id, true];
+                }));
+
                 state.labels = Map(signatures.map(sig => {
                     const id = sig.id();
                     return state.labels.has(id)
@@ -233,6 +249,7 @@ const nodeStylingSlice = createSlice({
             } else {
 
                 state.collapsed = Map();
+                state.hideDisconnected = Map();
                 state.labels = Map();
                 state.nodeTree = null;
                 state.shapes = Map();
@@ -260,6 +277,7 @@ export const {
     setStrokeWidth,
     setWidth,
     toggleCollapseNodeStyle,
+    toggleHideDisconnected,
     toggleHideEmptySets
 } = nodeStylingSlice.actions;
 export default nodeStylingSlice.reducer;

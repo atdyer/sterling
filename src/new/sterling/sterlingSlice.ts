@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 // Sterling view types
 export type MainView = 'graph' | 'table';
 export type TableView = 'settings' | 'evaluator' | null;
-export type GraphView = 'data' | 'layout' | 'node' | 'edge' | 'settings' | 'evaluator' | null;
+export type GraphView = 'settings' | 'layout' | 'node' | 'edge' | 'evaluator' | null;
 
 // Sterling state
 export interface SterlingState {
@@ -17,7 +17,7 @@ export interface SterlingState {
 const initialState: SterlingState = {
     mainView: 'graph',
     tableView: 'settings',
-    graphView: 'edge',
+    graphView: 'settings',
     welcomeDescription: 'Use Alloy to generate an instance.',
     welcomeTitle: 'Welcome to Sterling'
 };

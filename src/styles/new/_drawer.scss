@@ -46,6 +46,7 @@
 
       .bp3-form-group.bp3-inline {
         justify-content: space-between;
+        max-height: 30px;
       }
 
       .bp3-label {
@@ -67,6 +68,10 @@
       .centered {
         display: flex;
         justify-content: center;
+      }
+
+      .fill {
+        width: 100%;
       }
 
       input.bp3-input {
