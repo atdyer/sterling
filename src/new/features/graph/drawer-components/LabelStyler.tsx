@@ -12,7 +12,7 @@ import {
     POPPER_MODIFIERS,
     DEFAULT_COLORS,
     foreground
-} from '../../../util';
+} from '../util';
 
 interface ILabelStyle {
     color?: string

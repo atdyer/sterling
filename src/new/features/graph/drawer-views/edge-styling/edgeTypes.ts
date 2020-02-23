@@ -2,11 +2,15 @@ import { AlloyField, AlloySkolem } from 'alloy-ts';
 import { FieldTag } from '../../../table/TableTags';
 import { Tree } from '../../graphTypes';
 
-function buildFieldTree (fields: AlloyField[]): Tree | null {
+function buildFieldTree (fields: AlloyField[], hideEmpty: boolean): Tree | null {
+
+    const flds = hideEmpty
+        ? fields.filter(field => field.tuples().length)
+        : fields;
 
     return {
         id: 'Fields',
-        children: fields.map(field => {
+        children: flds.map(field => {
             return {
                 id: field.id(),
                 label: FieldTag.FieldTagEls(field.id().split('<:')),
@@ -14,15 +18,19 @@ function buildFieldTree (fields: AlloyField[]): Tree | null {
                 children: []
             }
         })
-    }
+    };
 
 }
 
-function buildSkolemTree (skolems: AlloySkolem[]): Tree | null {
+function buildSkolemTree (skolems: AlloySkolem[], hideEmpty: boolean): Tree | null {
+
+    const skls = hideEmpty
+        ? skolems.filter(skolem => skolem.tuples().length)
+        : skolems;
 
     return {
         id: 'Skolems',
-        children: skolems
+        children: skls
             .map(skolem => {
                 return {
                     id: skolem.id(),

@@ -8,7 +8,7 @@ import {
     ShapeStyle
 } from '@atdyer/graph-js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlloyInstance } from 'alloy-ts';
+import { AlloyInstance, AlloySignature } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../../../alloy/alloySlice';
 import { Tree } from '../../graphTypes';
@@ -17,19 +17,23 @@ import { buildTypeTree } from './nodeTypes';
 export interface NodeStylingState {
     collapsed: Map<string, boolean>
     collapseNodeStyle: boolean
+    hideEmptySets: boolean
     labels: Map<string, LabelStyle>
     nodeTree: Tree | null
     selected: string | null
     shapes: Map<string, ShapeStyle>
+    univ: AlloySignature | null
 }
 
 const initialState: NodeStylingState = {
     collapsed: Map(),
     collapseNodeStyle: false,
+    hideEmptySets: true,
     labels: Map(),
     nodeTree: null,
     selected: null,
-    shapes: Map()
+    shapes: Map(),
+    univ: null
 };
 
 const nodeStylingSlice = createSlice({
@@ -145,6 +149,10 @@ const nodeStylingSlice = createSlice({
         },
         toggleCollapseNodeStyle (state) {
             state.collapseNodeStyle = !state.collapseNodeStyle;
+        },
+        toggleHideEmptySets (state) {
+            state.hideEmptySets = !state.hideEmptySets;
+            state.nodeTree = buildTypeTree(state.univ as AlloySignature, state.hideEmptySets);
         }
     },
     extraReducers: builder =>
@@ -155,10 +163,11 @@ const nodeStylingSlice = createSlice({
             if (instance !== null) {
 
                 const signatures = instance.signatures();
-                const univ = signatures.find(sig => sig.id() === 'univ');
+                const univ = signatures.find(sig => sig.id() === 'univ') || null;
 
                 // Build the signature tree using only IDs
-                state.nodeTree = buildTypeTree(univ);
+                state.univ = univ;
+                state.nodeTree = buildTypeTree(univ, state.hideEmptySets);
 
                 // For all maps, keeps existing signatures, get rid of ones that
                 // no longer exist, and add new ones
@@ -195,6 +204,7 @@ const nodeStylingSlice = createSlice({
                 state.nodeTree = null;
                 state.shapes = Map();
                 state.selected = null;
+                state.univ = null;
 
             }
 
@@ -214,6 +224,7 @@ export const {
     setStroke,
     setStrokeWidth,
     setWidth,
-    toggleCollapseNodeStyle
+    toggleCollapseNodeStyle,
+    toggleHideEmptySets
 } = nodeStylingSlice.actions;
 export default nodeStylingSlice.reducer;

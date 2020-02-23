@@ -1,10 +1,10 @@
-import { NonIdealState, Tree } from '@blueprintjs/core';
+import { Divider, NonIdealState, Switch, Tree } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
 import { mapTreeToNodes } from '../../graphTypes';
-import LabelStyler from './components/LabelStyler';
+import LabelStyler from '../../drawer-components/LabelStyler';
 import ShapeSelector from './components/ShapeSelector';
 import ShapeStyler from './components/ShapeStyler';
 import {
@@ -20,9 +20,9 @@ import {
     setStroke,
     setStrokeWidth,
     setWidth,
-    toggleCollapseNodeStyle
+    toggleCollapseNodeStyle,
+    toggleHideEmptySets
 } from './nodeStylingSlice';
-
 
 // Map redux state to node styling props
 const mapState = (state: RootState) => ({
@@ -43,7 +43,8 @@ const mapDispatch = {
     setStroke,
     setStrokeWidth,
     setWidth,
-    toggleCollapseNodeStyle
+    toggleCollapseNodeStyle,
+    toggleHideEmptySets
 };
 
 // Create connector
@@ -76,12 +77,17 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
             collapsed={props.collapseNodeStyle}
             onToggle={props.toggleCollapseNodeStyle}
             title={'Node Styling'}>
+            <Switch
+                checked={props.hideEmptySets}
+                label={'Hide Empty Sets'}
+                onChange={props.toggleHideEmptySets}/>
             <Tree
                 contents={[tree]}
                 onNodeClick={node => props.selectTreeNode(node.id.toString())}
                 onNodeCollapse={node => props.collapseTreeNode(node.id.toString())}
                 onNodeExpand={node => props.expandTreeNode(node.id.toString())}
             />
+            <Divider/>
             {
                 selected
                     ? (

@@ -1,55 +1,27 @@
-import {
-    Button,
-    FormGroup,
-    NumericInput,
-    Popover,
-    Position
-} from '@blueprintjs/core';
+import { Button, FormGroup, NumericInput, Popover } from '@blueprintjs/core';
+import { Position } from '@blueprintjs/core/lib/esm/common/position';
 import React from 'react';
 import { TwitterPicker } from 'react-color';
 import {
     background,
+    DEFAULT_COLORS,
     foreground,
-    POPPER_MODIFIERS,
-    DEFAULT_COLORS
+    POPPER_MODIFIERS
 } from '../../../util';
 
-interface IShapeStyle {
-    fill?: string
+interface ILinkStyle {
     stroke?: string
     strokeWidth?: number
-    onChangeFill: (color: string) => void
     onChangeStroke: (color: string) => void
     onChangeStrokeWidth: (width: number | null) => void
 }
 
-const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
+const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
 
-    const fill = props.fill;
     const stroke = props.stroke;
 
     return (
         <>
-            <FormGroup inline={true} label={'Fill'}>
-                <Popover
-                    hasBackdrop={true}
-                    usePortal={true}
-                    modifiers={POPPER_MODIFIERS}
-                    position={Position.LEFT}>
-                    <Button
-                        style={{
-                            backgroundColor: background(fill),
-                            color: foreground(fill)
-                        }}
-                        text={fill || 'Inheret'}
-                        minimal={true}/>
-                    <TwitterPicker
-                        color={background(fill)}
-                        colors={DEFAULT_COLORS}
-                        onChange={color => props.onChangeFill(color.hex)}
-                        triangle={'hide'}/>
-                </Popover>
-            </FormGroup>
             <FormGroup inline={true} label={'Stroke'}>
                 <Popover
                     hasBackdrop={true}
@@ -83,6 +55,7 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
             </FormGroup>
         </>
     );
+
 };
 
-export default ShapeStyler;
+export default LinkStyler;
