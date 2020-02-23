@@ -17,8 +17,8 @@ import {
 interface ILabelStyle {
     color?: string
     size?: number
-    onChangeColor: (color: string) => void
-    onChangeSize: (size: number | null) => void
+    onChangeColor: (color: string | null) => void
+    onChangeSize: (size: string) => void
 }
 
 const LabelStyler: React.FunctionComponent<ILabelStyle> = props => {
@@ -29,13 +29,20 @@ const LabelStyler: React.FunctionComponent<ILabelStyle> = props => {
                 <NumericInput
                     allowNumericCharactersOnly={true}
                     fill={false}
-                    min={1}
+                    min={0}
                     minorStepSize={null}
-                    onValueChange={props.onChangeSize}
+                    onValueChange={(_, strVal) => props.onChangeSize(strVal)}
                     placeholder={'Inheret'}
                     value={props.size}/>
             </FormGroup>
             <FormGroup inline={true} label={'Label Color'}>
+                {
+                    props.color &&
+                    <Button
+                        icon={'small-cross'}
+                        onClick={() => props.onChangeColor(null)}
+                        minimal={true}/>
+                }
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}

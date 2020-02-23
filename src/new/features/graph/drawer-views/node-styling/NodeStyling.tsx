@@ -1,4 +1,10 @@
-import { Divider, NonIdealState, Switch, Tree } from '@blueprintjs/core';
+import {
+    Button, ButtonGroup,
+    Divider,
+    NonIdealState,
+    Switch,
+    Tree
+} from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
@@ -8,6 +14,8 @@ import LabelStyler from '../../drawer-components/LabelStyler';
 import ShapeSelector from './components/ShapeSelector';
 import ShapeStyler from './components/ShapeStyler';
 import {
+    clearAll,
+    clearCurrent,
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,
@@ -31,6 +39,8 @@ const mapState = (state: RootState) => ({
 
 // Actions
 const mapDispatch = {
+    clearAll,
+    clearCurrent,
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,
@@ -112,6 +122,18 @@ const NodeStyling: React.FunctionComponent<NodeStylingProps> = props => {
                                 size={labelSize}
                                 onChangeColor={props.setLabelColor}
                                 onChangeSize={props.setLabelSize}/>
+                            <ButtonGroup
+                                fill={true}
+                                minimal={true}>
+                                <Button
+                                    icon={'clean'}
+                                    onClick={props.clearCurrent}
+                                    text={'Clear Selected'}/>
+                                <Button
+                                    icon={'clean'}
+                                    onClick={props.clearAll}
+                                    text={'Clear All'}/>
+                            </ButtonGroup>
                         </>
                     )
                     : (

@@ -40,6 +40,16 @@ const nodeStylingSlice = createSlice({
     name: 'nodestyles',
     initialState: initialState,
     reducers: {
+        clearAll (state) {
+            state.labels = state.labels.map(() => ({}));
+            state.shapes = state.shapes.map(() => ({}));
+        },
+        clearCurrent (state) {
+            if (state.selected) {
+                state.labels = state.labels.set(state.selected, {});
+                state.shapes = state.shapes.set(state.selected, {});
+            }
+        },
         collapseTreeNode (state, action: PayloadAction<string>) {
             const target = action.payload;
             state.collapsed = state.collapsed.set(target, true);
@@ -52,48 +62,67 @@ const nodeStylingSlice = createSlice({
             const target = action.payload;
             if (state.shapes.has(target)) state.selected = target;
         },
-        setFill (state, action: PayloadAction<string>) {
+        setFill (state, action: PayloadAction<string|null>) {
             if (state.selected) {
                 const shape = state.shapes.get(state.selected);
-                const newshape = shape ? cloneShapeStyle(shape) : {};
-                newshape.fill = action.payload;
-                state.shapes = state.shapes.set(state.selected, newshape);
-            }
-        },
-        setHeight (state, action: PayloadAction<number>) {
-            if (state.selected) {
-                const height = action.payload;
-                const shape = state.shapes.get(state.selected);
-                if (shape && shape.type === 'rectangle') {
-                    const newshape = cloneShapeStyle(shape) as RectangleStyle;
-                    newshape.height = height;
+                if (shape) {
+                    const color = action.payload;
+                    const newshape = shape ? cloneShapeStyle(shape) : {};
+                    color === null
+                        ? delete newshape.fill
+                        : newshape.fill = color;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
             }
         },
-        setLabelColor (state, action: PayloadAction<string>) {
+        setHeight (state, action: PayloadAction<string>) {
             if (state.selected) {
-                const label = state.labels.get(state.selected);
-                const newlabel = label ? cloneLabelStyle(label) : {};
-                newlabel.color = action.payload;
-                state.labels = state.labels.set(state.selected, newlabel);
+                const shape = state.shapes.get(state.selected);
+                if (shape && shape.type === 'rectangle') {
+                    const height = parseInt(action.payload);
+                    const newshape = cloneShapeStyle(shape) as RectangleStyle;
+                    isNaN(height) || height === 0
+                        ? delete newshape.height
+                        : newshape.height = height;
+                    state.shapes = state.shapes.set(state.selected, newshape);
+                }
             }
         },
-        setLabelSize (state, action: PayloadAction<number>) {
+        setLabelColor (state, action: PayloadAction<string|null>) {
             if (state.selected) {
                 const label = state.labels.get(state.selected);
-                const newlabel = label ? cloneLabelStyle(label) : {};
-                newlabel.font = `${action.payload}px sans-serif`;
-                state.labels = state.labels.set(state.selected, newlabel);
+                if (label) {
+                    const color = action.payload;
+                    const newlabel = label ? cloneLabelStyle(label) : {};
+                    color === null
+                        ? delete newlabel.color
+                        : newlabel.color = color;
+                    state.labels = state.labels.set(state.selected, newlabel);
+                }
             }
         },
-        setRadius (state, action: PayloadAction<number>) {
+        setLabelSize (state, action: PayloadAction<string>) {
             if (state.selected) {
-                const radius = action.payload;
+                const label = state.labels.get(state.selected);
+                if (label) {
+                    const newlabel = label ? cloneLabelStyle(label) : {};
+                    const size = parseInt(action.payload);
+                    isNaN(size) || size === 0
+                        ? delete newlabel.font
+                        : newlabel.font = `${size}px sans-serif`;
+                    state.labels = state.labels.set(state.selected, newlabel);
+                }
+            }
+        },
+        setRadius (state, action: PayloadAction<string>) {
+            if (state.selected) {
                 const shape = state.shapes.get(state.selected);
                 if (shape && shape.type === 'circle') {
+                    const radius = parseInt(action.payload);
                     const newshape = cloneShapeStyle(shape) as CircleStyle;
-                    newshape.radius = radius;
+                    isNaN(radius) || radius === 0
+                        ? delete newshape.radius
+                        : newshape.radius = radius;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
             }
@@ -112,37 +141,41 @@ const nodeStylingSlice = createSlice({
                 }
             }
         },
-        setStroke (state, action: PayloadAction<string>) {
+        setStroke (state, action: PayloadAction<string|null>) {
             if (state.selected) {
                 const shape = state.shapes.get(state.selected);
                 if (shape) {
+                    const color = action.payload;
                     const newshape = cloneShapeStyle(shape)!;
-                    newshape.stroke = action.payload;
+                    color === null
+                        ? delete newshape.stroke
+                        : newshape.stroke = color;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
             }
         },
-        setStrokeWidth (state, action: PayloadAction<number|null>) {
+        setStrokeWidth (state, action: PayloadAction<string>) {
             if (state.selected) {
                 const shape = state.shapes.get(state.selected);
                 if (shape) {
+                    const width = parseInt(action.payload);
                     const newshape = cloneShapeStyle(shape)!;
-                    if (action.payload === null) {
-                        delete newshape.strokeWidth;
-                    } else {
-                        newshape.strokeWidth = action.payload;
-                    }
+                    isNaN(width) || width === -1
+                        ? delete newshape.strokeWidth
+                        : newshape.strokeWidth = width;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
             }
         },
-        setWidth (state, action: PayloadAction<number>) {
+        setWidth (state, action: PayloadAction<string>) {
             if (state.selected) {
-                const width = action.payload;
                 const shape = state.shapes.get(state.selected);
                 if (shape && shape.type === 'rectangle') {
+                    const width = parseInt(action.payload);
                     const newshape = cloneShapeStyle(shape) as RectangleStyle;
-                    newshape.width = width;
+                    isNaN(width) || width === 0
+                        ? delete newshape.width
+                        : newshape.width = width;
                     state.shapes = state.shapes.set(state.selected, newshape);
                 }
             }
@@ -212,6 +245,8 @@ const nodeStylingSlice = createSlice({
 });
 
 export const {
+    clearAll,
+    clearCurrent,
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,

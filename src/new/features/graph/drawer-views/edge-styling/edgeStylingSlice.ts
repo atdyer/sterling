@@ -1,7 +1,6 @@
 import {
     cloneLabelStyle,
     cloneLinkStyle,
-    cloneShapeStyle,
     LabelStyle,
     LinkStyle
 } from '@atdyer/graph-js';
@@ -45,6 +44,16 @@ const edgeStylingSlice = createSlice({
     name: 'edgestyles',
     initialState: initialState,
     reducers: {
+        clearAll (state) {
+            state.labelStyles = state.labelStyles.map(() => ({}));
+            state.linkStyles = state.linkStyles.map(() => ({}));
+        },
+        clearCurrent (state) {
+            if (state.selected) {
+                state.labelStyles = state.labelStyles.set(state.selected, {});
+                state.linkStyles = state.linkStyles.set(state.selected, {});
+            }
+        },
         collapseTreeNode (state, action: PayloadAction<string>) {
             const target = action.payload;
             state.collapsed = state.collapsed.set(target, true);
@@ -55,45 +64,59 @@ const edgeStylingSlice = createSlice({
         },
         selectTreeNode (state, action: PayloadAction<string>) {
             const target = action.payload;
-            if (state.linkStyles.has(target)) state.selected = target;
+            if (state.linkStyles.has(target)
+                || target === 'Fields'
+                || target === 'Skolems') state.selected = target;
         },
-        setLabelColor (state, action: PayloadAction<string>) {
+        setLabelColor (state, action: PayloadAction<string|null>) {
             if (state.selected) {
                 const label = state.labelStyles.get(state.selected);
-                const newlabel = label ? cloneLabelStyle(label) : {};
-                newlabel.color = action.payload;
-                state.labelStyles = state.labelStyles.set(state.selected, newlabel);
-            }
-        },
-        setLabelSize (state, action: PayloadAction<number>) {
-            if (state.selected) {
-                const label = state.labelStyles.get(state.selected);
-                const newlabel = label ? cloneLabelStyle(label) : {};
-                newlabel.font = `${action.payload}px sans-serif`;
-                state.labelStyles = state.labelStyles.set(state.selected, newlabel);
-            }
-        },
-        setStroke (state, action: PayloadAction<string>) {
-            if (state.selected) {
-                const shape = state.linkStyles.get(state.selected);
-                if (shape) {
-                    const newshape = cloneShapeStyle(shape)!;
-                    newshape.stroke = action.payload;
-                    state.linkStyles = state.linkStyles.set(state.selected, newshape);
+                if (label) {
+                    const color = action.payload;
+                    const newlabel = label ? cloneLabelStyle(label) : {};
+                    color === null
+                        ? delete newlabel.color
+                        : newlabel.color = color;
+                    state.labelStyles = state.labelStyles.set(state.selected, newlabel);
                 }
             }
         },
-        setStrokeWidth (state, action: PayloadAction<number|null>) {
+        setLabelSize (state, action: PayloadAction<string>) {
             if (state.selected) {
-                const shape = state.linkStyles.get(state.selected);
-                if (shape) {
-                    const newshape = cloneShapeStyle(shape)!;
-                    if (action.payload === null) {
-                        delete newshape.strokeWidth;
-                    } else {
-                        newshape.strokeWidth = action.payload;
-                    }
-                    state.linkStyles = state.linkStyles.set(state.selected, newshape);
+                const label = state.labelStyles.get(state.selected);
+                if (label) {
+                    const size = parseInt(action.payload);
+                    const newlabel = label ? cloneLabelStyle(label) : {};
+                    isNaN(size) || size === 0
+                        ? delete newlabel.font
+                        : newlabel.font = `${size}px sans-serif`;
+                    state.labelStyles = state.labelStyles.set(state.selected, newlabel);
+                }
+            }
+        },
+        setStroke (state, action: PayloadAction<string|null>) {
+            if (state.selected) {
+                const link = state.linkStyles.get(state.selected);
+                if (link) {
+                    const color = action.payload;
+                    const newlink = cloneLinkStyle(link)!;
+                    color === null
+                        ? delete newlink.stroke
+                        : newlink.stroke = color;
+                    state.linkStyles = state.linkStyles.set(state.selected, newlink);
+                }
+            }
+        },
+        setStrokeWidth (state, action: PayloadAction<string>) {
+            if (state.selected) {
+                const link = state.linkStyles.get(state.selected);
+                if (link) {
+                    const width = parseInt(action.payload);
+                    const newlink = cloneLinkStyle(link)!;
+                    isNaN(width) || width === 0
+                        ? delete newlink.strokeWidth
+                        : newlink.strokeWidth = width;
+                    state.linkStyles = state.linkStyles.set(state.selected, newlink);
                 }
             }
         },
@@ -136,6 +159,15 @@ const edgeStylingSlice = createSlice({
                         : [id, {}]
                 }));
 
+                if (!state.labelStyles.has('Fields'))
+                    state.labelStyles = state.labelStyles.set('Fields', {});
+                if (!state.labelStyles.has('Skolems'))
+                    state.labelStyles = state.labelStyles.set('Skolems', {});
+                if (!state.linkStyles.has('Fields'))
+                    state.linkStyles = state.linkStyles.set('Fields', {});
+                if (!state.linkStyles.has('Skolems'))
+                    state.linkStyles = state.linkStyles.set('Skolems', {});
+
             } else {
 
                 state.fields = [];
@@ -152,6 +184,8 @@ const edgeStylingSlice = createSlice({
 });
 
 export const {
+    clearAll,
+    clearCurrent,
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,

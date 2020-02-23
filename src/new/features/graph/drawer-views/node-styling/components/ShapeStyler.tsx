@@ -18,9 +18,9 @@ interface IShapeStyle {
     fill?: string
     stroke?: string
     strokeWidth?: number
-    onChangeFill: (color: string) => void
-    onChangeStroke: (color: string) => void
-    onChangeStrokeWidth: (width: number | null) => void
+    onChangeFill: (color: string|null) => void
+    onChangeStroke: (color: string|null) => void
+    onChangeStrokeWidth: (width: string) => void
 }
 
 const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
@@ -31,6 +31,13 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
     return (
         <>
             <FormGroup inline={true} label={'Fill'}>
+                {
+                    fill &&
+                    <Button
+                        icon={'small-cross'}
+                        onClick={() => props.onChangeFill(null)}
+                        minimal={true}/>
+                }
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
@@ -51,6 +58,13 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                 </Popover>
             </FormGroup>
             <FormGroup inline={true} label={'Stroke'}>
+                {
+                    stroke &&
+                    <Button
+                        icon={'small-cross'}
+                        onClick={() => props.onChangeStroke(null)}
+                        minimal={true}/>
+                }
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
@@ -74,10 +88,8 @@ const ShapeStyler: React.FunctionComponent<IShapeStyle> = props => {
                 <NumericInput
                     allowNumericCharactersOnly={true}
                     fill={false}
-                    min={0}
-                    onValueChange={(number, string) => {
-                        props.onChangeStrokeWidth(string.length ? number : null)
-                    }}
+                    min={-1}
+                    onValueChange={(_, strVal) => props.onChangeStrokeWidth(strVal)}
                     placeholder={'Inheret'}
                     value={props.strokeWidth}/>
             </FormGroup>

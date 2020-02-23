@@ -4,10 +4,10 @@ import React from 'react';
 
 interface IShapeSelector {
     shape: ShapeStyle
-    onSetHeight: (height: number) => void
-    onSetRadius: (radius: number) => void
+    onSetHeight: (height: string) => void
+    onSetRadius: (radius: string) => void
     onSetShape: (shape: 'circle' | 'rectangle' | null) => void
-    onSetWidth: (width: number) => void
+    onSetWidth: (width: string) => void
 }
 
 const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
@@ -52,7 +52,7 @@ const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
 
 interface ICircleProps {
     style: CircleStyle
-    onSetRadius: (radius: number) => void
+    onSetRadius: (radius: string) => void
 }
 const CircleProps: React.FunctionComponent<ICircleProps> = props => {
     const radius = props.style.radius;
@@ -61,18 +61,18 @@ const CircleProps: React.FunctionComponent<ICircleProps> = props => {
             <NumericInput
                 allowNumericCharactersOnly={true}
                 fill={false}
-                min={1}
-                onValueChange={props.onSetRadius}
-                placeholder={radius ? radius.toString() : ''}
-                value={radius}/>
+                min={0}
+                onValueChange={(_, strVal) => props.onSetRadius(strVal)}
+                placeholder={'Inheret'}
+                value={radius || undefined}/>
         </FormGroup>
     )
 };
 
 interface IRectangleProps {
     style: RectangleStyle,
-    onSetHeight: (height: number) => void
-    onSetWidth: (width: number) => void
+    onSetHeight: (height: string) => void
+    onSetWidth: (width: string) => void
 }
 const RectangleProps: React.FunctionComponent<IRectangleProps> = props => {
     const width = props.style.width;
@@ -82,19 +82,19 @@ const RectangleProps: React.FunctionComponent<IRectangleProps> = props => {
             <NumericInput
                 allowNumericCharactersOnly={true}
                 fill={false}
-                min={1}
-                onValueChange={props.onSetWidth}
-                placeholder={width ? width.toString() : ''}
-                value={width}
+                min={0}
+                onValueChange={(_, strVal) => props.onSetWidth(strVal)}
+                placeholder={'Inheret'}
+                value={width || undefined}
                 />
         </FormGroup>
         <FormGroup inline={true} label={'Height'}>
             <NumericInput
                 allowNumericCharactersOnly={true}
-                min={1}
-                onValueChange={props.onSetHeight}
-                placeholder={height ? height.toString() : ''}
-                value={height}
+                min={0}
+                onValueChange={(_, strVal) => props.onSetHeight(strVal)}
+                placeholder={'Inheret'}
+                value={height || undefined}
             />
         </FormGroup>
     </>;

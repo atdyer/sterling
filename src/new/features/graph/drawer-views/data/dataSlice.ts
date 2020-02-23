@@ -1,16 +1,23 @@
 import { Edge } from '@atdyer/graph-js';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AlloyAtom, AlloyField, AlloyInstance, AlloyTuple } from 'alloy-ts';
+import {
+    AlloyAtom,
+    AlloyField,
+    AlloyInstance,
+    AlloySkolem,
+    AlloyTuple
+} from 'alloy-ts';
 import { List, Map } from 'immutable';
 import { isDefined } from 'ts-is-present';
 import { setInstance } from '../../../../alloy/alloySlice'
 
 export interface DataState {
     atoms: Map<string, string[]>
+    collapseProjections: boolean
     edges: Edge[]
     fields: List<AlloyField>
-    collapseProjections: boolean
     projections: Map<string, string>
+    skolems: List<AlloySkolem>
     unprojected: List<string>
 }
 
@@ -20,6 +27,7 @@ const initialState: DataState = {
     edges: [],
     fields: List(),
     projections: Map(),
+    skolems: List(),
     unprojected: List()
 };
 
@@ -36,7 +44,10 @@ const dataSlice = createSlice({
                 const index = state.unprojected.indexOf(sig);
                 if (index !== -1)
                     state.unprojected = state.unprojected.delete(index);
-                state.edges = buildEdges(state.fields.toArray(), state.projections.toMap());
+                state.edges = buildEdges(
+                    [...state.fields.toArray(), ...state.skolems.toArray()],
+                    state.projections.toMap()
+                );
             }
         },
         nextAtom (state, action: PayloadAction<string>) {
@@ -48,7 +59,10 @@ const dataSlice = createSlice({
                 const nxt = idx + 1;
                 if (idx !== -1 && nxt < atm.length) {
                     state.projections = state.projections.set(sig, atm[nxt]);
-                    state.edges = buildEdges(state.fields.toArray(), state.projections.toMap());
+                    state.edges = buildEdges(
+                        [...state.fields.toArray(), ...state.skolems.toArray()],
+                        state.projections.toMap()
+                    );
                 }
             }
         },
@@ -61,7 +75,10 @@ const dataSlice = createSlice({
                 const nxt = idx - 1;
                 if (idx !== -1 && nxt >= 0) {
                     state.projections = state.projections.set(sig, atm[nxt]);
-                    state.edges = buildEdges(state.fields.toArray(), state.projections.toMap());
+                    state.edges = buildEdges(
+                        [...state.fields.toArray(), ...state.skolems.toArray()],
+                        state.projections.toMap()
+                    );
                 }
             }
         },
@@ -69,13 +86,19 @@ const dataSlice = createSlice({
             const sig = action.payload;
             state.projections = state.projections.delete(sig);
             state.unprojected = state.unprojected.push(sig).sort(alphabetical);
-            state.edges = buildEdges(state.fields.toArray(), state.projections.toMap());
+            state.edges = buildEdges(
+                [...state.fields.toArray(), ...state.skolems.toArray()],
+                state.projections.toMap()
+            );
         },
         setProjection (state, action: PayloadAction<{sig: string, atom: string}>) {
             const { sig, atom } = action.payload;
             if (state.projections.has(sig) && state.projections.get(sig) !== atom) {
                 state.projections = state.projections.set(sig, atom);
-                state.edges = buildEdges(state.fields.toArray(), state.projections.toMap());
+                state.edges = buildEdges(
+                    [...state.fields.toArray(), ...state.skolems.toArray()],
+                    state.projections.toMap()
+                );
             }
         },
         toggleCollapseProjections (state) {
@@ -124,9 +147,12 @@ const dataSlice = createSlice({
                     // Extract fields
                     state.fields = List(instance.fields());
 
+                    // Extract skolems of arity higher than 1
+                    state.skolems = List(instance.skolems().filter(s => s.arity() > 1));
+
                     // Build edges
                     state.edges = buildEdges(
-                        state.fields.toArray(),
+                        [...state.fields.toArray(), ...state.skolems.toArray()],
                         state.projections.toMap()
                     );
 
@@ -157,28 +183,28 @@ function alphabetical (a: string, b: string): number {
     return a.localeCompare(b);
 }
 
-function buildEdges (fields: AlloyField[], projections: Map<string, string>): Edge[] {
+function buildEdges (items: (AlloyField | AlloySkolem)[], projections: Map<string, string>): Edge[] {
 
-    return fields.map(field => {
+    return items.map(item => {
 
-        const sigs = field.types().map(sig => sig.id());
+        const sigs = item.types().map(sig => sig.id());
         const prjatoms = sigs.map(type => projections.get(type));
         const hasprj = prjatoms.some(item => item !== undefined);
 
         if (!hasprj) {
-            return field.tuples()
-                .map(tuple => tupleToEdge(tuple, field.name()))
+            return item.tuples()
+                .map(tuple => tupleToEdge(tuple, item.id(), item.name()))
                 .filter(isDefined)
         } else {
-            return field.tuples()
-                .map(tuple => projectedTupleToEdge(tuple, field.name(), prjatoms))
+            return item.tuples()
+                .map(tuple => projectedTupleToEdge(tuple, item.id(), item.name(), prjatoms))
                 .filter(isDefined)
         }
 
     }).reduce((acc, cur) => acc.concat(...cur), []);
 }
 
-function projectedTupleToEdge (tuple: AlloyTuple, group: string, atoms: (string | undefined)[]): Edge | undefined {
+function projectedTupleToEdge (tuple: AlloyTuple, group: string, label: string, atoms: (string | undefined)[]): Edge | undefined {
     const keep = tuple.atoms().every((atom, index) => {
         return atoms[index] === undefined || atoms[index] === atom.name();
     });
@@ -194,7 +220,7 @@ function projectedTupleToEdge (tuple: AlloyTuple, group: string, atoms: (string 
                 source: source.name(),
                 target: target.name(),
                 group: group,
-                label: group + (
+                label: label + (
                     middle.length
                         ? `[${middle.join(',')}]`
                         : ''
@@ -204,7 +230,7 @@ function projectedTupleToEdge (tuple: AlloyTuple, group: string, atoms: (string 
     }
 }
 
-function tupleToEdge (tuple: AlloyTuple, group: string): Edge | undefined {
+function tupleToEdge (tuple: AlloyTuple, group: string, label: string): Edge | undefined {
     const atoms = tuple.atoms();
     if (atoms.length > 1) {
         const source = atoms[0];
@@ -214,7 +240,7 @@ function tupleToEdge (tuple: AlloyTuple, group: string): Edge | undefined {
             source: source.name(),
             target: target.name(),
             group: group,
-            label: group + (
+            label: label + (
                 middle.length
                     ? `[${middle.join(',')}]`
                     : ''

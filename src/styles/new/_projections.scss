@@ -7,7 +7,10 @@
   row-gap: 0.5em;
   column-gap: 0.5em;
   align-items: center;
-  margin-bottom: 14px;
+
+  &:not(:empty) {
+    margin-bottom: 14px;
+  }
 
   .bp3-html-select {
     box-shadow: $pt-elevation-shadow-0;

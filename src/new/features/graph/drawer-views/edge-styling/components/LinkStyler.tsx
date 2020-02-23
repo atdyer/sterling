@@ -12,8 +12,8 @@ import {
 interface ILinkStyle {
     stroke?: string
     strokeWidth?: number
-    onChangeStroke: (color: string) => void
-    onChangeStrokeWidth: (width: number | null) => void
+    onChangeStroke: (color: string | null) => void
+    onChangeStrokeWidth: (width: string) => void
 }
 
 const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
@@ -23,6 +23,13 @@ const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
     return (
         <>
             <FormGroup inline={true} label={'Stroke'}>
+                {
+                    props.stroke &&
+                    <Button
+                        icon={'small-cross'}
+                        onClick={() => props.onChangeStroke(null)}
+                        minimal={true}/>
+                }
                 <Popover
                     hasBackdrop={true}
                     usePortal={true}
@@ -47,9 +54,7 @@ const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
                     allowNumericCharactersOnly={true}
                     fill={false}
                     min={0}
-                    onValueChange={(number, string) => {
-                        props.onChangeStrokeWidth(string.length ? number : null)
-                    }}
+                    onValueChange={(_, strVal) => props.onChangeStrokeWidth(strVal)}
                     placeholder={'Inheret'}
                     value={props.strokeWidth}/>
             </FormGroup>
