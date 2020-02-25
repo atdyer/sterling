@@ -12,6 +12,7 @@ import { isDefined } from 'ts-is-present';
 import { setInstance } from '../../../../alloy/alloySlice'
 
 export interface DataState {
+    asAttribute: Map<string, boolean>
     atoms: Map<string, string[]>
     collapseExpressions: boolean
     collapseProjections: boolean
@@ -25,6 +26,7 @@ export interface DataState {
 }
 
 const initialState: DataState = {
+    asAttribute: Map(),
     atoms: Map(),
     collapseExpressions: false,
     collapseProjections: false,
@@ -107,18 +109,16 @@ const dataSlice = createSlice({
                 );
             }
         },
-        toggleCollapseExpressions (state) {
-            state.collapseExpressions = !state.collapseExpressions;
+        toggleAsAttribute (state, action: PayloadAction<string|null>) {
+            const field = action.payload;
+            if (field) {
+                const curr = state.asAttribute.get(field);
+                state.asAttribute = state.asAttribute.set(field, !curr);
+            }
         },
         toggleCollapseProjections (state) {
             state.collapseProjections = !state.collapseProjections
         },
-        toggleCollapseRelations (state) {
-            state.collapseRelations = !state.collapseRelations;
-        },
-        toggleCollapseSignatures (state) {
-            state.collapseSignatures = !state.collapseSignatures;
-        }
     },
     extraReducers: build =>
         build.addCase(setInstance, (state, action: PayloadAction<AlloyInstance | null>) => {
@@ -132,6 +132,9 @@ const dataSlice = createSlice({
                 if (univ) {
 
                     const signatures = univ.subTypes();
+                    const fields = instance.fields();
+                    const skolems = instance.skolems().filter(s => s.arity() > 1);
+                    const both = [...fields, ...skolems];
 
                     // Keep any existing projections
                     state.projections = Map<string, string>().withMutations(map => {
@@ -142,6 +145,14 @@ const dataSlice = createSlice({
                             }
                         });
                     });
+
+                    // Keep any fields set to display as attributes
+                    state.asAttribute = Map(both.map(item => {
+                        const id = item.id();
+                        return state.asAttribute.has(id)
+                            ? [id, state.asAttribute.get(id)!]
+                            : [id, false];
+                    }));
 
                     // Create the list of unprojected signatures
                     state.unprojected = List<string>().withMutations(list => {
@@ -173,6 +184,7 @@ const dataSlice = createSlice({
 
                 } else {
 
+                    state.asAttribute = Map();
                     state.atoms = Map();
                     state.edges = [];
                     state.fields = List();
@@ -270,9 +282,7 @@ export const {
     previousAtom,
     removeProjection,
     setProjection,
-    toggleCollapseExpressions,
-    toggleCollapseProjections,
-    toggleCollapseRelations,
-    toggleCollapseSignatures
+    toggleAsAttribute,
+    toggleCollapseProjections
 } = dataSlice.actions;
 export default dataSlice.reducer;

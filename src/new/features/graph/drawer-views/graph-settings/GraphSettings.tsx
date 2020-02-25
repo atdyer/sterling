@@ -34,6 +34,8 @@ const GraphSettings: React.FunctionComponent<GraphSettingsProps> = props => (
                 checked={props.axesVisible}
                 label={'Display Axes'}
                 onChange={props.toggleAxesVisible}/>
+        </FormGroup>
+        <FormGroup>
             <Switch
                 alignIndicator={Alignment.RIGHT}
                 checked={props.gridVisible}

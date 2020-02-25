@@ -7,11 +7,19 @@ import {
     NodeStyle
 } from '@atdyer/graph-js';
 import { NonIdealState } from '@blueprintjs/core';
-import { AlloyAtom, AlloyField, AlloySignature, AlloySkolem } from 'alloy-ts';
+import {
+    AlloyAtom,
+    AlloyField,
+    AlloySignature,
+    AlloySkolem,
+    AlloyTuple
+} from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { isDefined } from 'ts-is-present';
 import { RootState } from '../../rootReducer';
+import { Map } from 'immutable';
+import { generateGraph } from './graphData';
 
 const DEFAULT_EDGE_STYLES: EdgeStyle[] = [];
 
@@ -22,6 +30,7 @@ const DEFAULT_NODE_STYLES: NodeStyle[] = [{
 
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
+    asAttribute: state.graphSlice.dataSlice.asAttribute,
     description: state.sterlingSlice.welcomeDescription,
     edges: state.graphSlice.dataSlice.edges,
     edgeLabels: state.graphSlice.edgeStylingSlice.labelStyles,
@@ -30,6 +39,7 @@ const mapState = (state: RootState) => ({
     instance: state.alloySlice.instance,
     nodeLabels: state.graphSlice.nodeStylingSlice.labels,
     links: state.graphSlice.edgeStylingSlice.linkStyles,
+    projections: state.graphSlice.dataSlice.projections,
     shapes: state.graphSlice.nodeStylingSlice.shapes,
     settings: state.graphSlice.graphSettingsSlice,
     title: state.sterlingSlice.welcomeTitle
@@ -69,16 +79,28 @@ class GraphStage extends React.Component<GraphStageProps> {
         const instance = props.instance;
         const graph = props.graph;
         const settings = props.settings;
-        const edges = props.edges;
+        // const edges = props.edges;
+        // const attrs = props.asAttribute;
 
         if (instance) {
 
-            // Merge old nodes with current nodes
-            this._nodes = mergeAtomsToNodes(this._nodes, instance.atoms());
+            // TESTING
+            const [nodes, edges] = generateGraph(
+                instance,
+                this._nodes,
+                props.projections,
+                props.asAttribute,
+                props.hideDisconnected
+            );
 
-            const nodes = props.hideDisconnected
-                ? this._buildConnectedNodes()
-                : this._nodes;
+            this._nodes = nodes;
+
+            // Merge old nodes with current nodes
+            // this._nodes = mergeAtomsToNodes(this._nodes, instance.atoms(), attrs);
+
+            // const nodes = props.hideDisconnected
+            //     ? this._buildConnectedNodes(edges)
+            //     : this._nodes;
 
             // Set the nodes and edges
             graph.nodes(nodes);
@@ -117,10 +139,9 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     }
 
-    private _buildConnectedNodes (): Node[] {
+    private _buildConnectedNodes (edges: Edge[]): Node[] {
 
         const props = this.props;
-        const edges = props.edges;
         const instance = props.instance;
 
         if (!instance) return [];
@@ -213,12 +234,33 @@ class GraphStage extends React.Component<GraphStageProps> {
 
 }
 
-function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
+function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[], attrs: Map<string, boolean>): Node[] {
 
     return atoms.map(atom => {
+
         const id = atom.name();
         const existing = nodes.find(node => node.id === id);
         const labels = atom.skolems().map(skolem => skolem.id());
+
+        const fields = atom.type().fields();
+        fields.forEach(field => {
+            const id = field.id();
+            const asattr = !!attrs.get(id);
+            if (asattr) {
+                // This field is to be displayed as an attribute, now get all
+                // tuples that start with this atom and add a label
+                field.tuples()
+                    .filter(tuple => tuple.atoms()[0] === atom)
+                    .forEach(tuple => {
+                        const rest = tuple.atoms().slice(1);
+                        if (rest.length) {
+                            labels.push(`${field.name()}: ${rest.map(atom => atom.name()).join('->')}`);
+                        }
+                    })
+                // labels.push(`${id}: ${}`)
+            }
+        });
+
         if (existing) {
             existing.labels = labels.length ? labels : undefined;
             return existing;
@@ -232,6 +274,10 @@ function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[]): Node[] {
         }
     });
 
+}
+
+function project (tuple: AlloyTuple, projections: Map<string, string>): AlloyTuple {
+    return new AlloyTuple(tuple.id(), tuple.atoms());
 }
 
 function removeDisconnected (nodes: Node[], edges: Edge[], removeable: Set<string>): Node[] {

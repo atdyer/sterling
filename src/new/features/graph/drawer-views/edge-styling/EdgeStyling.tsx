@@ -1,8 +1,9 @@
 import {
+    Alignment,
     Button,
     ButtonGroup,
-    Divider,
-    NonIdealState,
+    Divider, FormGroup,
+    NonIdealState, Switch,
     Tooltip,
     Tree
 } from '@blueprintjs/core';
@@ -26,9 +27,11 @@ import {
     toggleCollapseEdgeStyle,
     toggleHideEmptyFields
 } from './edgeStylingSlice';
+import { toggleAsAttribute } from '../data/dataSlice';
 
 const mapState = (state: RootState) => ({
-    ...state.graphSlice.edgeStylingSlice
+    ...state.graphSlice.edgeStylingSlice,
+    asAttribute: state.graphSlice.dataSlice.asAttribute
 });
 
 const mapDispatch = {
@@ -41,6 +44,7 @@ const mapDispatch = {
     setLabelSize,
     setStroke,
     setStrokeWidth,
+    toggleAsAttribute,
     toggleCollapseEdgeStyle,
     toggleHideEmptyFields
 };
@@ -55,6 +59,7 @@ const EdgeStyling: React.FunctionComponent<EdgeStylingProps> = props => {
 
     // Link properties
     const link = selected ? props.linkStyles.get(selected) || {} : {};
+    const attr = selected ? props.asAttribute.get(selected) : false;
     const stroke = link ? link.stroke : undefined;
     const strokeWidth = link ? link.strokeWidth : undefined;
 
@@ -103,6 +108,13 @@ const EdgeStyling: React.FunctionComponent<EdgeStylingProps> = props => {
                     selected
                         ? (
                             <>
+                                <FormGroup>
+                                    <Switch
+                                        alignIndicator={Alignment.RIGHT}
+                                        checked={attr}
+                                        label={'Show as Attribute'}
+                                        onChange={() => props.toggleAsAttribute(selected)}/>
+                                </FormGroup>
                                 <LinkStyler
                                     stroke={stroke}
                                     strokeWidth={strokeWidth}
