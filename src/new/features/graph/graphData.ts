@@ -41,7 +41,6 @@ function generateGraph (
      * }
      */
 
-
     // Create a map of Signature objects to their projected Atom objects and a
     // set of all projected atoms
     const _projections: Map<AlloySignature, AlloyAtom|undefined> = Map(instance.signatures().map(sig => {
@@ -117,6 +116,7 @@ function generateGraph (
     // Create the labels for each atom
     const labelMap = Map<AlloyAtom, string[]>()
         .withMutations(map => {
+
             labelFields.forEach(addLabel);
             labelSkolems.forEach(addLabel);
 
@@ -137,9 +137,11 @@ function generateGraph (
                 // Combine all labels for this particular field/skolem and add
                 // them to the appropriate atom
                 labels.forEach((labels, atom) => {
+                    const paren = item.expressionType() === 'field' && !isAttribute(item);
                     const joined = labels.length ? `: ${labels.join(', ')}` : '';
+                    const label = `${item.name()}${joined}`;
                     if (!map.has(atom)) map.set(atom, []);
-                    map.get(atom)!.push(`${item.name()}${joined}`);
+                    map.get(atom)!.push(paren ? `(${label})` : label);
                 });
 
             }

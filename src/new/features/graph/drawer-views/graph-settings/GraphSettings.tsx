@@ -1,4 +1,4 @@
-import { Alignment, FormGroup, Switch } from '@blueprintjs/core';
+import { Alignment, Switch } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';

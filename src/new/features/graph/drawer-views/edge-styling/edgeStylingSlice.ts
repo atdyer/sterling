@@ -14,6 +14,7 @@ import { buildFieldTree, buildSkolemTree } from './edgeTypes';
 export interface EdgeStylingState {
     collapsed: Map<string, boolean>
     collapseEdgeStyle: boolean
+    collapseScheme: boolean
     fields: AlloyField[]
     hideEmptyFields: boolean
     labelStyles: Map<string, LabelStyle>
@@ -30,6 +31,7 @@ const initialState: EdgeStylingState = {
         Skolems: false
     }),
     collapseEdgeStyle: false,
+    collapseScheme: false,
     fields: [],
     hideEmptyFields: true,
     labelStyles: Map(),
@@ -67,6 +69,34 @@ const edgeStylingSlice = createSlice({
             if (state.linkStyles.has(target)
                 || target === 'Fields'
                 || target === 'Skolems') state.selected = target;
+        },
+        setColorScheme (state, action: PayloadAction<string[]>) {
+            const colors = action.payload;
+            if (!colors.length) return;
+            state.linkStyles = state.linkStyles.withMutations(styles => {
+                [...state.fields, ...state.skolems].forEach((item, index) => {
+                    const id = item.id();
+                    const color = colors[index % colors.length];
+                    const link = state.linkStyles.get(id);
+                    if (link) {
+                        const newlink = cloneLinkStyle(link);
+                        newlink.stroke = color;
+                        styles.set(id, newlink);
+                    }
+                });
+            });
+            state.labelStyles = state.labelStyles.withMutations(styles => {
+                [...state.fields, ...state.skolems].forEach((item, index) => {
+                    const id = item.id();
+                    const color = colors[index % colors.length];
+                    const label = state.labelStyles.get(id);
+                    if (label) {
+                        const newlabel = cloneLabelStyle(label);
+                        newlabel.color = color;
+                        styles.set(id, newlabel);
+                    }
+                });
+            })
         },
         setLabelColor (state, action: PayloadAction<string|null>) {
             if (state.selected) {
@@ -122,6 +152,9 @@ const edgeStylingSlice = createSlice({
         },
         toggleCollapseEdgeStyle (state) {
             state.collapseEdgeStyle = !state.collapseEdgeStyle;
+        },
+        toggleCollapseScheme (state) {
+            state.collapseScheme = !state.collapseScheme;
         },
         toggleHideEmptyFields (state) {
             state.hideEmptyFields = !state.hideEmptyFields;
@@ -188,11 +221,13 @@ export const {
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,
+    setColorScheme,
     setLabelColor,
     setLabelSize,
     setStroke,
     setStrokeWidth,
     toggleCollapseEdgeStyle,
+    toggleCollapseScheme,
     toggleHideEmptyFields
 } = edgeStylingSlice.actions;
 export default edgeStylingSlice.reducer;

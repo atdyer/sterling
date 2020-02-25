@@ -1,24 +1,14 @@
 import {
     cloneLabelStyle,
     cloneShapeStyle,
-    Edge,
     EdgeStyle,
-    Node,
     NodeStyle
 } from '@atdyer/graph-js';
 import { NonIdealState } from '@blueprintjs/core';
-import {
-    AlloyAtom,
-    AlloyField,
-    AlloySignature,
-    AlloySkolem,
-    AlloyTuple
-} from 'alloy-ts';
+import { AlloyField, AlloySignature, AlloySkolem } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { isDefined } from 'ts-is-present';
 import { RootState } from '../../rootReducer';
-import { Map } from 'immutable';
 import { generateGraph } from './graphData';
 
 const DEFAULT_EDGE_STYLES: EdgeStyle[] = [];
@@ -54,14 +44,12 @@ type GraphStageProps = ConnectedProps<typeof connector>;
 class GraphStage extends React.Component<GraphStageProps> {
 
     private _ref: React.RefObject<HTMLCanvasElement>;
-    private _nodes: Node[];
 
     constructor (props: GraphStageProps) {
 
         super(props);
 
         this._ref = React.createRef<HTMLCanvasElement>();
-        this._nodes = [];
 
     }
 
@@ -81,16 +69,13 @@ class GraphStage extends React.Component<GraphStageProps> {
 
         if (instance) {
 
-            // TESTING
             const [nodes, edges] = generateGraph(
                 instance,
-                this._nodes,
+                graph.nodes(),
                 props.projections,
                 props.asAttribute,
                 props.hideDisconnected
             );
-
-            this._nodes = nodes;
 
             // Set the nodes and edges
             graph.nodes(nodes);
@@ -196,7 +181,7 @@ class GraphStage extends React.Component<GraphStageProps> {
 
         const styletree = populate(univ);
         if (!styletree.shape) styletree.shape = {};
-        if (!styletree.shape.type) styletree.shape.type = 'circle';
+        if (!styletree.shape.type) styletree.shape.type = 'rectangle';
 
         return [styletree];
 

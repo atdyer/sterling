@@ -135,7 +135,6 @@ const dataSlice = createSlice({
 
                     state.asAttribute = Map();
                     state.atoms = Map();
-                    // state.fields = List();
                     state.projections = Map();
                     state.unprojected = List();
 

@@ -2,8 +2,8 @@ import { Button, Collapse } from '@blueprintjs/core';
 import React, { CSSProperties } from 'react';
 
 interface ISectionProps {
-    collapsed: boolean
-    onToggle: () => void
+    collapsed?: boolean
+    onToggle?: () => void
     style?: CSSProperties
     title?: string
 }
@@ -22,10 +22,12 @@ const Section: React.FunctionComponent<ISectionProps> = props => {
                     <div className='title'>
                         {props.title.toUpperCase()}
                     </div>
-                    <Button
-                        icon={collapseIcon}
-                        minimal={true}
-                        onClick={props.onToggle}/>
+                    {
+                        props.onToggle && <Button
+                            icon={collapseIcon}
+                            minimal={true}
+                            onClick={props.onToggle}/>
+                    }
                 </div>
             }
             <Collapse
