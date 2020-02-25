@@ -97,25 +97,25 @@ const GraphSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
     return (
         <>
             <SidebarButton
-                active={view === 'settings'}
-                click={() => props.setGraphView('settings')}
-                icon={'settings'}
-                text={'Graph Settings and Projections'}/>
+                active={view === 'node'}
+                click={() => props.setGraphView('node')}
+                icon={'group-objects'}
+                text={'Projections and Node Styling'}/>
+            <SidebarButton
+                active={view === 'edge'}
+                click={() => props.setGraphView('edge')}
+                icon={'flows'}
+                text={'Edge Styling'}/>
             <SidebarButton
                 active={view === 'layout'}
                 click={() => props.setGraphView('layout')}
                 icon={'layout-auto'}
                 text={'Layout'}/>
             <SidebarButton
-                active={view === 'node'}
-                click={() => props.setGraphView('node')}
-                icon={'group-objects'}
-                text={'Node Styling'}/>
-            <SidebarButton
-                active={view === 'edge'}
-                click={() => props.setGraphView('edge')}
-                icon={'flows'}
-                text={'Edge Styling'}/>
+                active={view === 'settings'}
+                click={() => props.setGraphView('settings')}
+                icon={'settings'}
+                text={'Graph Settings'}/>
         </>
     );
 

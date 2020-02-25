@@ -8,9 +8,9 @@ import {
 } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { RootState } from '../../../../../rootReducer';
-import SterlingDrawer from '../../../../../sterling/SterlingDrawer';
-import { POPPER_MODIFIERS } from '../../../util';
+import { RootState } from '../../../../rootReducer';
+import SterlingDrawer from '../../../../sterling/SterlingDrawer';
+import { POPPER_MODIFIERS } from '../../util';
 import {
     addProjection,
     nextAtom,
@@ -18,7 +18,7 @@ import {
     removeProjection,
     setProjection,
     toggleCollapseProjections
-} from '../dataSlice';
+} from '../data/dataSlice';
 
 
 const mapState = (state: RootState) => ({

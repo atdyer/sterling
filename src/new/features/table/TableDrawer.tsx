@@ -79,139 +79,125 @@ const TableDrawer: React.FunctionComponent<TableDrawerProps> = props => {
                 onToggle={props.toggleCollapseTables}
                 style={{ zIndex: 1 }}
                 title={'Tables'}>
-                <FormGroup>
-                    <RadioGroup
-                        onChange={event => props.setTableTypes(parseInt(event.currentTarget.value))}
-                        selectedValue={props.tablesType}>
-                        <Radio label='All Tables' value={TablesType.All}/>
-                        <Radio label='Signatures' value={TablesType.Signatures}/>
-                        <Radio label='Fields' value={TablesType.Fields}/>
-                        <Radio label='Skolems' disabled={props.highlightSkolems} value={TablesType.Skolems}/>
-                        <Radio label='Choose Tables' value={TablesType.Select}/>
-                        <AlloyMultiSelect
-                            items={props.data}
-                            itemsSelected={props.dataSelected}
-                            onClearSelectedItems={props.clearSelectedData}
-                            onDeselectItem={props.deselectData}
-                            onSelectItem={props.selectData}
-                            nameFunction={buildNameFunction(props.removeThis)}/>
-                    </RadioGroup>
-                </FormGroup>
+                <RadioGroup
+                    onChange={event => props.setTableTypes(parseInt(event.currentTarget.value))}
+                    selectedValue={props.tablesType}>
+                    <Radio label='All Tables' value={TablesType.All}/>
+                    <Radio label='Signatures' value={TablesType.Signatures}/>
+                    <Radio label='Fields' value={TablesType.Fields}/>
+                    <Radio label='Skolems' disabled={props.highlightSkolems} value={TablesType.Skolems}/>
+                    <Radio label='Choose Tables' value={TablesType.Select}/>
+                    <AlloyMultiSelect
+                        items={props.data}
+                        itemsSelected={props.dataSelected}
+                        onClearSelectedItems={props.clearSelectedData}
+                        onDeselectItem={props.deselectData}
+                        onSelectItem={props.selectData}
+                        nameFunction={buildNameFunction(props.removeThis)}/>
+                </RadioGroup>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
                 collapsed={props.collapseData}
                 onToggle={props.toggleCollapseData}
                 title={'Data Options'}>
-                <FormGroup>
-
-                    <Switch
-                        alignIndicator={Alignment.LEFT}
-                        checked={props.removeBuiltin}
-                        disabled={props.tablesType === TablesType.Select}
-                        label='Hide Built-in Signatures'
-                        onChange={props.toggleRemoveBuiltin}/>
-
-                    <Switch
-                        alignIndicator={Alignment.LEFT}
-                        checked={props.removeEmpty}
-                        disabled={props.tablesType === TablesType.Select}
-                        label='Hide Empty Tables'
-                        onChange={props.toggleRemoveEmpty}/>
-
-                    <Switch
-                        alignIndicator={Alignment.LEFT}
-                        checked={props.removeThis}
-                        label='Remove "this" from Signature names'
-                        onChange={props.toggleRemoveThis}/>
-
-                    <Switch
-                        alignIndicator={Alignment.LEFT}
-                        checked={props.highlightSkolems}
-                        label='Display Skolems as highlighted rows'
-                        onChange={props.toggleHighlightSkolems}/>
-
-                </FormGroup>
+                <Switch
+                    alignIndicator={Alignment.LEFT}
+                    checked={props.removeBuiltin}
+                    disabled={props.tablesType === TablesType.Select}
+                    label='Hide Built-in Signatures'
+                    onChange={props.toggleRemoveBuiltin}/>
+                <Switch
+                    alignIndicator={Alignment.LEFT}
+                    checked={props.removeEmpty}
+                    disabled={props.tablesType === TablesType.Select}
+                    label='Hide Empty Tables'
+                    onChange={props.toggleRemoveEmpty}/>
+                <Switch
+                    alignIndicator={Alignment.LEFT}
+                    checked={props.removeThis}
+                    label='Remove "this" from Signature names'
+                    onChange={props.toggleRemoveThis}/>
+                <Switch
+                    alignIndicator={Alignment.LEFT}
+                    checked={props.highlightSkolems}
+                    label='Display Skolems as highlighted rows'
+                    onChange={props.toggleHighlightSkolems}/>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
                 collapsed={props.collapseLayout}
                 onToggle={props.toggleCollapseLayout}
                 title={'Layout Options'}>
-                <FormGroup>
-                    <FormGroup inline={true} label='Layout Direction'>
-                        <ButtonGroup>
-                            <Button
-                                active={props.layoutDirection === LayoutDirection.Row}
-                                icon='vertical-distribution'
-                                onClick={() => props.setLayoutDirection(LayoutDirection.Row)}/>
-                            <Button
-                                active={props.layoutDirection === LayoutDirection.Column}
-                                icon='horizontal-distribution'
-                                onClick={() => props.setLayoutDirection(LayoutDirection.Column)}/>
-                        </ButtonGroup>
-                    </FormGroup>
-
-                    <FormGroup inline={true} label='Align'>
-                        <ButtonGroup>
-                            <Button
-                                active={props.alignment === HorizontalAlignment.Left}
-                                icon='align-left'
-                                onClick={() => props.setAlignment(HorizontalAlignment.Left)}/>
-                            <Button
-                                active={props.alignment === HorizontalAlignment.Center}
-                                icon='align-center'
-                                onClick={() => props.setAlignment(HorizontalAlignment.Center)}/>
-                            <Button
-                                active={props.alignment === HorizontalAlignment.Right}
-                                icon='align-right'
-                                onClick={() => props.setAlignment(HorizontalAlignment.Right)}/>
-                        </ButtonGroup>
-                    </FormGroup>
-
-                    <FormGroup inline={true} label='Sort'>
-                        <ButtonGroup>
-                            <Button
-                                icon='group-objects'
-                                onClick={() => {
-                                    props.setSort({
-                                        method: SortMethod.Group,
-                                        direction: SortDirection.Ascending
-                                    });
-                                }}/>
-                            <Button
-                                icon='sort-alphabetical'
-                                onClick={() => {
-                                    props.setSort({
-                                        method: SortMethod.Alphabetical,
-                                        direction: SortDirection.Ascending
-                                    });
-                                }}/>
-                            <Button
-                                icon='sort-alphabetical-desc'
-                                onClick={() => {
-                                    props.setSort({
-                                        method: SortMethod.Alphabetical,
-                                        direction: SortDirection.Descending
-                                    });
-                                }}/>
-                            <Button
-                                icon='sort-numerical'
-                                onClick={() => {
-                                    props.setSort({
-                                        method: SortMethod.Size,
-                                        direction: SortDirection.Ascending
-                                    });
-                                }}/>
-                            <Button
-                                icon='sort-numerical-desc'
-                                onClick={() => {
-                                    props.setSort({
-                                        method: SortMethod.Size,
-                                        direction: SortDirection.Descending
-                                    });
-                                }}/>
-                        </ButtonGroup>
-                    </FormGroup>
-
+                <FormGroup inline={true} label='Layout Direction'>
+                    <ButtonGroup>
+                        <Button
+                            active={props.layoutDirection === LayoutDirection.Row}
+                            icon='vertical-distribution'
+                            onClick={() => props.setLayoutDirection(LayoutDirection.Row)}/>
+                        <Button
+                            active={props.layoutDirection === LayoutDirection.Column}
+                            icon='horizontal-distribution'
+                            onClick={() => props.setLayoutDirection(LayoutDirection.Column)}/>
+                    </ButtonGroup>
+                </FormGroup>
+                <FormGroup inline={true} label='Align'>
+                    <ButtonGroup>
+                        <Button
+                            active={props.alignment === HorizontalAlignment.Left}
+                            icon='align-left'
+                            onClick={() => props.setAlignment(HorizontalAlignment.Left)}/>
+                        <Button
+                            active={props.alignment === HorizontalAlignment.Center}
+                            icon='align-center'
+                            onClick={() => props.setAlignment(HorizontalAlignment.Center)}/>
+                        <Button
+                            active={props.alignment === HorizontalAlignment.Right}
+                            icon='align-right'
+                            onClick={() => props.setAlignment(HorizontalAlignment.Right)}/>
+                    </ButtonGroup>
+                </FormGroup>
+                <FormGroup inline={true} label='Sort'>
+                    <ButtonGroup>
+                        <Button
+                            icon='group-objects'
+                            onClick={() => {
+                                props.setSort({
+                                    method: SortMethod.Group,
+                                    direction: SortDirection.Ascending
+                                });
+                            }}/>
+                        <Button
+                            icon='sort-alphabetical'
+                            onClick={() => {
+                                props.setSort({
+                                    method: SortMethod.Alphabetical,
+                                    direction: SortDirection.Ascending
+                                });
+                            }}/>
+                        <Button
+                            icon='sort-alphabetical-desc'
+                            onClick={() => {
+                                props.setSort({
+                                    method: SortMethod.Alphabetical,
+                                    direction: SortDirection.Descending
+                                });
+                            }}/>
+                        <Button
+                            icon='sort-numerical'
+                            onClick={() => {
+                                props.setSort({
+                                    method: SortMethod.Size,
+                                    direction: SortDirection.Ascending
+                                });
+                            }}/>
+                        <Button
+                            icon='sort-numerical-desc'
+                            onClick={() => {
+                                props.setSort({
+                                    method: SortMethod.Size,
+                                    direction: SortDirection.Descending
+                                });
+                            }}/>
+                    </ButtonGroup>
                 </FormGroup>
             </SterlingDrawer.Section>
         </>

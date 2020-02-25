@@ -28,20 +28,16 @@ const GraphSettings: React.FunctionComponent<GraphSettingsProps> = props => (
         collapsed={props.collapseSettings}
         onToggle={props.toggleCollapseSettings}
         title={'Graph Settings'}>
-        <FormGroup>
-            <Switch
-                alignIndicator={Alignment.RIGHT}
-                checked={props.axesVisible}
-                label={'Display Axes'}
-                onChange={props.toggleAxesVisible}/>
-        </FormGroup>
-        <FormGroup>
-            <Switch
-                alignIndicator={Alignment.RIGHT}
-                checked={props.gridVisible}
-                label={'Display Grid'}
-                onChange={props.toggleGridVisible}/>
-        </FormGroup>
+        <Switch
+            alignIndicator={Alignment.RIGHT}
+            checked={props.axesVisible}
+            label={'Display Axes'}
+            onChange={props.toggleAxesVisible}/>
+        <Switch
+            alignIndicator={Alignment.RIGHT}
+            checked={props.gridVisible}
+            label={'Display Grid'}
+            onChange={props.toggleGridVisible}/>
     </SterlingDrawer.Section>
 );
 

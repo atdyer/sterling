@@ -32,13 +32,12 @@ const DEFAULT_NODE_STYLES: NodeStyle[] = [{
 const mapState = (state: RootState) => ({
     asAttribute: state.graphSlice.dataSlice.asAttribute,
     description: state.sterlingSlice.welcomeDescription,
-    edges: state.graphSlice.dataSlice.edges,
     edgeLabels: state.graphSlice.edgeStylingSlice.labelStyles,
     graph: state.graphSlice.graphSlice.graph,
     hideDisconnected: state.graphSlice.nodeStylingSlice.hideDisconnected,
     instance: state.alloySlice.instance,
-    nodeLabels: state.graphSlice.nodeStylingSlice.labels,
     links: state.graphSlice.edgeStylingSlice.linkStyles,
+    nodeLabels: state.graphSlice.nodeStylingSlice.labels,
     projections: state.graphSlice.dataSlice.projections,
     shapes: state.graphSlice.nodeStylingSlice.shapes,
     settings: state.graphSlice.graphSettingsSlice,
@@ -79,8 +78,6 @@ class GraphStage extends React.Component<GraphStageProps> {
         const instance = props.instance;
         const graph = props.graph;
         const settings = props.settings;
-        // const edges = props.edges;
-        // const attrs = props.asAttribute;
 
         if (instance) {
 
@@ -94,13 +91,6 @@ class GraphStage extends React.Component<GraphStageProps> {
             );
 
             this._nodes = nodes;
-
-            // Merge old nodes with current nodes
-            // this._nodes = mergeAtomsToNodes(this._nodes, instance.atoms(), attrs);
-
-            // const nodes = props.hideDisconnected
-            //     ? this._buildConnectedNodes(edges)
-            //     : this._nodes;
 
             // Set the nodes and edges
             graph.nodes(nodes);
@@ -136,26 +126,6 @@ class GraphStage extends React.Component<GraphStageProps> {
                 title={props.title}
                 description={props.description}
                 icon={'graph'}/>;
-
-    }
-
-    private _buildConnectedNodes (edges: Edge[]): Node[] {
-
-        const props = this.props;
-        const instance = props.instance;
-
-        if (!instance) return [];
-
-        // Create set of atoms that are eligible to be disconnected
-        const removeable = instance.atoms().map(atom => {
-            const type = atom.type().id();
-            const isSkolem = atom.skolems().some(skolem => skolem.arity() === 1);
-            return props.hideDisconnected.get(type) && !isSkolem
-                ? atom.name()
-                : undefined
-        }).filter(isDefined);
-
-        return removeDisconnected(this._nodes, edges, new Set(removeable));
 
     }
 
@@ -231,67 +201,6 @@ class GraphStage extends React.Component<GraphStageProps> {
         return [styletree];
 
     }
-
-}
-
-function mergeAtomsToNodes (nodes: Node[], atoms: AlloyAtom[], attrs: Map<string, boolean>): Node[] {
-
-    return atoms.map(atom => {
-
-        const id = atom.name();
-        const existing = nodes.find(node => node.id === id);
-        const labels = atom.skolems().map(skolem => skolem.id());
-
-        const fields = atom.type().fields();
-        fields.forEach(field => {
-            const id = field.id();
-            const asattr = !!attrs.get(id);
-            if (asattr) {
-                // This field is to be displayed as an attribute, now get all
-                // tuples that start with this atom and add a label
-                field.tuples()
-                    .filter(tuple => tuple.atoms()[0] === atom)
-                    .forEach(tuple => {
-                        const rest = tuple.atoms().slice(1);
-                        if (rest.length) {
-                            labels.push(`${field.name()}: ${rest.map(atom => atom.name()).join('->')}`);
-                        }
-                    })
-                // labels.push(`${id}: ${}`)
-            }
-        });
-
-        if (existing) {
-            existing.labels = labels.length ? labels : undefined;
-            return existing;
-        } else {
-            return {
-                id: id,
-                labels: labels.length ? labels : undefined,
-                x: 0,
-                y: 0
-            }
-        }
-    });
-
-}
-
-function project (tuple: AlloyTuple, projections: Map<string, string>): AlloyTuple {
-    return new AlloyTuple(tuple.id(), tuple.atoms());
-}
-
-function removeDisconnected (nodes: Node[], edges: Edge[], removeable: Set<string>): Node[] {
-
-    const connected = new Set<string>();
-
-    edges.forEach(edge => {
-        connected.add(edge.source);
-        connected.add(edge.target);
-    });
-
-    return nodes.filter(node =>
-        connected.has(node.id)
-        || !removeable.has(node.id));
 
 }
 
