@@ -2,9 +2,45 @@ import { NonIdealState } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
-import { LightAsync as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { githubGist } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { COMMENT } from 'highlight.js';
+
+const STYLE = githubGist;
+
+SyntaxHighlighter.registerLanguage('alloy', function () {
+
+    let NUMBER_RE = '\\b\\d+';
+
+    return {
+        // case_insensitive
+        case_insensitive: false,
+
+        // keywords
+        keywords: 'abstract all and as assert but check disj ' +
+            'else exactly extends fact for fun iden iff implies ' +
+            'in Int let lone module no none not one open or pred ' +
+            'run set sig some sum univ',
+
+        // contains
+        contains: [
+
+            // hljs.COMMENT
+            COMMENT('//', '$', {}),
+            COMMENT('--', '$', {}),
+            COMMENT('/\\*', '\\*/', {}),
+
+            {
+                // className
+                className: 'number',
+                // begin
+                begin: NUMBER_RE,
+                // relevance
+                relevance: 0
+            }
+        ]
+    };
+});
 
 const mapState = (state: RootState) => ({
     instance: state.alloySlice.instance,
@@ -42,40 +78,12 @@ const SourceStage: React.FunctionComponent<SourceStageProps> = props => {
             className={'source'}
             language={'alloy'}
             showLineNumbers={true}
-            style={githubGist}>
+            style={STYLE}>
             { props.selected.source() }
         </SyntaxHighlighter>
     );
 
 };
-
-SyntaxHighlighter.registerLanguage('alloy', function () {
-
-    let NUMBER_RE = '\\b\\d+';
-
-    return {
-
-        case_insensitive: false,
-
-        keywords: 'abstract all and as assert but check disj ' +
-            'else exactly extends fact for fun iden iff implies ' +
-            'in Int let lone module no none not one open or pred ' +
-            'run set sig some sum univ',
-
-        contains: [
-
-            COMMENT('//', '$', {}),
-            COMMENT('--', '$', {}),
-            COMMENT('/\\*', '\\*/', {}),
-
-            {
-                className: 'number',
-                begin: NUMBER_RE,
-                relevance: 0
-            }
-        ]
-    };
-});
 
 
 export default connector(SourceStage);
