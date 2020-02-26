@@ -106,6 +106,14 @@ class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavba
                         text={'Table'}
                         onClick={() => props.setMainView('table')}
                     />
+                    <Button
+                        active={props.view === 'source'}
+                        className={Classes.MINIMAL}
+                        icon={'document'}
+                        large={true}
+                        text={'Source'}
+                        onClick={() => props.setMainView('source')}
+                        />
                     <NavbarDivider/>
                 </Navbar.Group>
                 <Navbar.Group>

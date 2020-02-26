@@ -12,6 +12,7 @@ import { RootState } from '../rootReducer';
 import {
     setGraphView,
     setMainView,
+    setSourceView,
     setTableView
 } from './sterlingSlice';
 
@@ -24,6 +25,7 @@ const mapState = (state: RootState) => ({
 const mapDispatch = {
     setGraphView,
     setMainView,
+    setSourceView,
     setTableView
 };
 
@@ -66,13 +68,15 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
     const mainview = props.mainView;
     const evalActive =
         (mainview === 'graph' && props.graphView === 'evaluator') ||
-        (mainview === 'table' && props.tableView === 'evaluator');
+        (mainview === 'table' && props.tableView === 'evaluator') ||
+        (mainview === 'source' && props.sourceView === 'evaluator');
 
     return (
         <div className={'sidebar nav bp3-dark'}>
             {
                 mainview === 'graph' ? <GraphSidebar {...props}/> :
                 mainview === 'table' ? <TableSidebar {...props}/> :
+                mainview === 'source' ? <SourceSidebar {...props}/> :
                 null
             }
             <div className={'divider'}/>
@@ -81,6 +85,7 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
                 click={() => {
                     if (mainview === 'graph') props.setGraphView('evaluator');
                     if (mainview === 'table') props.setTableView('evaluator');
+                    if (mainview === 'source') props.setSourceView('evaluator');
                 }}
                 icon={'console'}
                 text={'Evaluator'}/>
@@ -129,6 +134,16 @@ const TableSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
             icon={'settings'}
             text={'Table Settings'}/>
     );
+};
+
+const SourceSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
+    return (
+        <SidebarButton
+            active={props.sourceView === 'files'}
+            click={() => props.setSourceView('files')}
+            icon={'document'}
+            text={'Model Sources'}/>
+    )
 };
 
 export default connector(SterlingSidebar);

@@ -2,6 +2,7 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import QuickEdgeStyling from './drawer-views/edge-styling/QuickEdgeStyling';
+import EdgeSettings from './drawer-views/graph-settings/EdgeSettings';
 import Layout from './drawer-views/layout/Layout';
 import Projections from './drawer-views/projections/Projections';
 import EdgeStyling from './drawer-views/edge-styling/EdgeStyling';
@@ -41,7 +42,12 @@ const GraphDrawer: React.FunctionComponent<GraphStageProps> = props => {
             <Layout/>
         </>
     );
-    if (props.view === 'settings') return <GraphSettings/>;
+    if (props.view === 'settings') return (
+        <>
+            <GraphSettings/>
+            <EdgeSettings/>
+        </>
+    );
 
     return null;
 };

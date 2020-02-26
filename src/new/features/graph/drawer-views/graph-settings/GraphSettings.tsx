@@ -5,7 +5,7 @@ import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
 import {
     toggleAxesVisible,
-    toggleCollapseSettings,
+    toggleCollapseGraphSettings,
     toggleGridVisible
 } from './graphSettingsSlice';
 
@@ -15,7 +15,7 @@ const mapState = (state: RootState) => ({
 
 const mapDispatch = {
     toggleAxesVisible,
-    toggleCollapseSettings,
+    toggleCollapseGraphSettings,
     toggleGridVisible
 };
 
@@ -25,8 +25,8 @@ type GraphSettingsProps = ConnectedProps<typeof connector>;
 
 const GraphSettings: React.FunctionComponent<GraphSettingsProps> = props => (
     <SterlingDrawer.Section
-        collapsed={props.collapseSettings}
-        onToggle={props.toggleCollapseSettings}
+        collapsed={props.collapseGraphSettings}
+        onToggle={props.toggleCollapseGraphSettings}
         title={'Graph Settings'}>
         <Switch
             alignIndicator={Alignment.RIGHT}

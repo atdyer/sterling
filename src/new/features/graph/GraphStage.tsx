@@ -1,11 +1,16 @@
 import {
     cloneLabelStyle,
-    cloneShapeStyle,
-    EdgeStyle,
+    cloneShapeStyle, DagreLayout,
+    EdgeStyle, Graph,
     NodeStyle
 } from '@atdyer/graph-js';
 import { NonIdealState } from '@blueprintjs/core';
-import { AlloyField, AlloySignature, AlloySkolem } from 'alloy-ts';
+import {
+    AlloyField,
+    AlloyInstance,
+    AlloySignature,
+    AlloySkolem
+} from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
@@ -21,7 +26,9 @@ const DEFAULT_NODE_STYLES: NodeStyle[] = [{
 // Map redux state to graph settings props
 const mapState = (state: RootState) => ({
     asAttribute: state.graphSlice.dataSlice.asAttribute,
+    bundleFactor: state.graphSlice.graphSettingsSlice.bundleFactor,
     description: state.sterlingSlice.welcomeDescription,
+    edgeLabelPlacement: state.graphSlice.graphSettingsSlice.edgeLabelPlacement,
     edgeLabels: state.graphSlice.edgeStylingSlice.labelStyles,
     graph: state.graphSlice.graphSlice.graph,
     hideDisconnected: state.graphSlice.nodeStylingSlice.hideDisconnected,
@@ -56,47 +63,34 @@ class GraphStage extends React.Component<GraphStageProps> {
     componentDidMount (): void {
 
         const canvas = this._ref.current;
+        const props = this.props;
+        const graph = props.graph;
+        const instance = props.instance;
+
+        if (instance) this._update(graph, instance);
         if (canvas) this.props.graph.canvas(canvas);
+
+        graph.update();
 
     }
 
-    componentDidUpdate (): void {
+    componentDidUpdate (prevProps: GraphStageProps): void {
 
         const props = this.props;
-        const instance = props.instance;
         const graph = props.graph;
-        const settings = props.settings;
+        const instance = props.instance;
 
-        if (instance) {
+        if (instance) this._update(graph, instance);
 
-            const [nodes, edges] = generateGraph(
-                instance,
-                graph.nodes(),
-                props.projections,
-                props.asAttribute,
-                props.hideDisconnected
-            );
-
-            // Set the nodes and edges
-            graph.nodes(nodes);
-            graph.edges(edges);
-
-            // Create the styles
-            graph.nodeStyles(this._buildNodeStyles());
-            graph.edgeStyles(this._buildEdgeStyles());
-
-        } else {
-
-            graph.nodes([]);
-            graph.edges([]);
-
+        if (!prevProps.instance || (instance && !anyInCommon(prevProps.instance, instance))) {
+            const dagre = new DagreLayout();
+            dagre.apply(graph, {
+                nodesep: 100,
+                rankdir: 'BT',
+                ranksep: 150
+            });
         }
 
-        graph.axesVisible(settings.axesVisible);
-        graph.gridVisible(settings.gridVisible);
-
-        const canvas = this._ref.current;
-        if (canvas) this.props.graph.canvas(canvas);
         graph.update();
 
     }
@@ -187,6 +181,59 @@ class GraphStage extends React.Component<GraphStageProps> {
 
     }
 
+    private _update (graph: Graph, instance: AlloyInstance): void {
+
+        const props = this.props;
+        const settings = props.settings;
+
+        if (instance) {
+
+            const [nodes, edges] = generateGraph(
+                instance,
+                graph.nodes(),
+                props.projections,
+                props.asAttribute,
+                props.hideDisconnected
+            );
+
+            // Set the nodes and edges
+            graph.nodes(nodes);
+            graph.edges(edges);
+            graph.bundleFactor(props.bundleFactor);
+            graph.edgeLabelPlacement(props.edgeLabelPlacement);
+
+            // Create the styles
+            graph.nodeStyles(this._buildNodeStyles());
+            graph.edgeStyles(this._buildEdgeStyles());
+
+        } else {
+
+            graph.nodes([]);
+            graph.edges([]);
+
+        }
+
+        graph.axesVisible(settings.axesVisible);
+        graph.gridVisible(settings.gridVisible);
+
+        const canvas = this._ref.current;
+        if (canvas) this.props.graph.canvas(canvas);
+
+    }
+
+}
+
+function anyInCommon (a: AlloyInstance, b: AlloyInstance): boolean {
+    const atoms = new Set();
+    a.atoms().forEach(atom => {
+        if (!atom.type().isBuiltin()) atoms.add(atom.id());
+    });
+    const batoms = b.atoms();
+    for (let i=0; i<batoms.length; ++i) {
+        const atom = batoms[i];
+        if (!atom.type().isBuiltin() && atoms.has(atom.id())) return true;
+    }
+    return false;
 }
 
 export default connector(GraphStage);

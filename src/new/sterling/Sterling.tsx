@@ -9,6 +9,8 @@ import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
 import GraphStage from '../features/graph/GraphStage';
+import SourceDrawer from '../features/source/SourceDrawer';
+import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
 import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
@@ -75,7 +77,8 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         const props = this.props;
         const drawerOpen =
             (props.mainView === 'graph' && props.graphView !== null) ||
-            (props.mainView === 'table' && props.tableView !== null);
+            (props.mainView === 'table' && props.tableView !== null) ||
+            (props.mainView === 'source' && props.sourceView !== null);
 
         return (
             <ResizeSensor onResize={this._resize}>
@@ -110,7 +113,8 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         const Evaluator = this._evaluatorView;
         const evalActive =
             (props.mainView === 'graph' && props.graphView === 'evaluator') ||
-            (props.mainView === 'table' && props.tableView === 'evaluator');
+            (props.mainView === 'table' && props.tableView === 'evaluator') ||
+            (props.mainView === 'source' && props.sourceView === 'evaluator');
 
         return <SterlingDrawer>
             {
@@ -120,6 +124,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                     :
                         props.mainView === 'graph' ? <GraphDrawer/> :
                         props.mainView === 'table' ? <TableDrawer/> :
+                        props.mainView === 'source' ? <SourceDrawer/> :
                         null
 
             }
@@ -135,7 +140,8 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
             <SterlingStage>
                 {
                     view === 'table' ? <TableStage/> :
-                    view === 'graph' ? <GraphStage/> : null
+                    view === 'graph' ? <GraphStage/> :
+                    view === 'source' ? <SourceStage/> : null
                 }
             </SterlingStage>
         )
