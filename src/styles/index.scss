@@ -2,26 +2,29 @@
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "~@blueprintjs/core/lib/scss/variables";
-@import '~@blueprintjs/select/lib/css/blueprint-select.css';
+@import "~@blueprintjs/select/lib/css/blueprint-select.css";
+@import "drawer";
 @import "evaluator";
-@import "fonts";
 @import "graph";
 @import "navbar";
-@import "view";
+@import "projections";
 @import "sidebar";
+@import "source";
 @import "split";
-@import "table";
-@import "tags";
+@import "stage";
+@import "tables";
+@import "fonts/fira";
 
 html, body {
   display: flex;
   width: 100%;
   height: 100%;
-  overflow: hidden;
 }
 
 body {
   padding-top: $pt-navbar-height;
+  padding-left: $st-sidebar-width;
+  overflow: hidden;
 }
 
 .sterling {

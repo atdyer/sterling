@@ -3,10 +3,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { AlloyConnection } from './alloy/AlloyConnection';
-import { sterlingApp } from './new/rootReducer';
-import Sterling from './new/sterling/Sterling';
+import { sterlingApp } from './rootReducer';
+import Sterling from './sterling/Sterling';
 import * as serviceWorker from './serviceWorker';
-import './styles/new/index.scss';
+import './styles/index.scss';
 
 const alloy = new AlloyConnection();
 

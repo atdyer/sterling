@@ -1,33 +1,68 @@
-import { FocusStyleManager, NonIdealState } from '@blueprintjs/core';
+import { FocusStyleManager, ResizeSensor } from '@blueprintjs/core';
+import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
+import { connect, ConnectedProps } from 'react-redux';
+import SplitPane from 'react-split-pane';
 import { SterlingConnection } from './SterlingConnection';
-import { ISterlingNavbarProps } from './SterlingNavbar';
-import { ISterlingUIView } from './SterlingTypes';
+import { setInstance } from '../alloy/alloySlice';
+import { Evaluator } from '../evaluator/Evaluator';
+import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
+import GraphDrawer from '../features/graph/GraphDrawer';
+import GraphStage from '../features/graph/GraphStage';
+import SourceDrawer from '../features/source/SourceDrawer';
+import SourceStage from '../features/source/SourceStage';
+import TableDrawer from '../features/table/TableDrawer';
+import TableStage from '../features/table/TableStage';
+import { RootState } from '../rootReducer';
+import SterlingDrawer from './SterlingDrawer';
+import SterlingNavbar from './SterlingNavbar';
+import SterlingSidebar from './SterlingSidebar';
+import SterlingStage from './SterlingStage';
+
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
-interface ISterlingProps {
-    connection: SterlingConnection,
-    navbar: React.ComponentType<ISterlingNavbarProps>,
-    views: ISterlingUIView[],
-    message?: string
+// Map redux state to sterling props
+const mapState = (state: RootState) => ({
+    graph: state.graphSlice.graphSlice.graph,
+    ...state.sterlingSlice
+});
+
+// Actions
+const mapDispatch = {
+    setInstance
+};
+
+// Connector
+const connector = connect(mapState, mapDispatch);
+
+// Create props type for things from redux
+type SterlingReduxProps = ConnectedProps<typeof connector>;
+
+// Create combined type for all props
+export type SterlingProps = SterlingReduxProps & {
+    connection: SterlingConnection
 }
 
 interface ISterlingState {
-    data: any[],
-    view: ISterlingUIView
+    instance: AlloyInstance | null
 }
 
-class Sterling extends React.Component<ISterlingProps, ISterlingState> {
+class Sterling extends React.Component<SterlingProps, ISterlingState> {
 
-    constructor (props: ISterlingProps) {
+    private readonly _evaluator: Evaluator;
+    private readonly _evaluatorView: React.ComponentType<IEvaluatorProps>;
+
+    constructor (props: SterlingProps) {
 
         super(props);
 
+        this._evaluator = new Evaluator(props.connection);
+        this._evaluatorView = EvaluatorView;
+
         this.state = {
-            data: [],
-            view: props.views[0]
-        }
+            instance: null
+        };
 
     }
 
@@ -40,85 +75,109 @@ class Sterling extends React.Component<ISterlingProps, ISterlingState> {
     render (): React.ReactNode {
 
         const props = this.props;
-        const state = this.state;
-        const Navbar = props.navbar;
+        const drawerOpen =
+            (props.mainView === 'graph' && props.graphView !== null) ||
+            (props.mainView === 'table' && props.tableView !== null) ||
+            (props.mainView === 'source' && props.sourceView !== null);
 
         return (
-            <div className={'sterling'}>
-                <Navbar
-                    connection={props.connection}
-                    onRequestView={this._setView}
-                    view={state.view}
-                    views={props.views}/>
-                {
-                    state.data.length
-                        ? this._views()
-                        : this._placeholder()
-                }
-            </div>
+            <ResizeSensor onResize={this._resize}>
+                <div className={'sterling'}>
+                    <SterlingNavbar connection={props.connection}/>
+                    <SterlingSidebar/>
+                    {
+                        !drawerOpen
+                            ? this._getStage()
+                            : (
+                                <SplitPane
+                                    split={'vertical'}
+                                    defaultSize={350}
+                                    minSize={150}
+                                    maxSize={-150}
+                                    onChange={this._resize}
+                                >
+                                    { this._getDrawer() }
+                                    { this._getStage() }
+                                </SplitPane>
+                            )
+                    }
+                </div>
+            </ResizeSensor>
         )
 
     }
 
-    private _initializeConnection = () => {
+    private _getDrawer = (): React.ReactNode => {
+
+        const props = this.props;
+        const Evaluator = this._evaluatorView;
+        const evalActive =
+            (props.mainView === 'graph' && props.graphView === 'evaluator') ||
+            (props.mainView === 'table' && props.tableView === 'evaluator') ||
+            (props.mainView === 'source' && props.sourceView === 'evaluator');
+
+        return <SterlingDrawer>
+            {
+                evalActive
+                    ?
+                        <Evaluator evaluator={this._evaluator}/>
+                    :
+                        props.mainView === 'graph' ? <GraphDrawer/> :
+                        props.mainView === 'table' ? <TableDrawer/> :
+                        props.mainView === 'source' ? <SourceDrawer/> :
+                        null
+
+            }
+        </SterlingDrawer>;
+
+    };
+
+    private _getStage = (): React.ReactNode => {
+
+        const view = this.props.mainView;
+
+        return (
+            <SterlingStage>
+                {
+                    view === 'table' ? <TableStage/> :
+                    view === 'graph' ? <GraphStage/> :
+                    view === 'source' ? <SourceStage/> : null
+                }
+            </SterlingStage>
+        )
+
+    };
+
+    private _initializeConnection = (): void => {
 
         const connection = this.props.connection;
 
-        connection
-            .on('connect', () => {
-                connection.request('current');
-            })
-            .on('instance', (instance: any) => {
-                const transforms = this.props.views.map(view => view.transform);
-                this.setState({
-                    data: transforms.map(t => t ? t(instance) : instance)
-                });
-            });
+        connection.addEventListener('connect', () => {
+            connection.requestCurrentInstance();
+        });
+
+        connection.addEventListener('instance', event => {
+            this.props.setInstance(event.instance);
+        });
+
+        // connection
+        //     .on('connect', () => {
+        //         connection.request('current');
+        //     })
+        //     .on('instance', (instance: AlloyInstance) => {
+        //         this.props.setInstance(instance);
+        //     });
 
         connection.connect();
 
     };
 
-    private _placeholder = (): React.ReactNode => {
+    private _resize = (): void => {
 
-        return <NonIdealState
-            description={this.props.message || 'Nothing to display'}
-            icon={this.state.view.icon}
-            title={'Welcome to Sterling'}/>
-
-    };
-
-    private _setView = (view: ISterlingUIView) => {
-
-        this.setState({view: view});
-
-    };
-
-    private _views = (): React.ReactNode => {
-
-        const props = this.props;
-        const state = this.state;
-
-        return <div className={'sterling-view'}>
-            {
-                props.views.map((view: ISterlingUIView, i: number) => {
-
-                    const View = view.view;
-                    const data = state.data[i];
-
-                    return <View
-                        connection={props.connection}
-                        data={data}
-                        key={view.name}
-                        visible={state.view === view}/>
-
-                })
-            }
-        </div>
+        this.props.graph.resize();
 
     }
 
 }
 
-export default Sterling;
-
+export default connector(Sterling);

@@ -1,5 +1,5 @@
-import { SterlingConnection } from '../../sterling/SterlingConnection';
-import { EventDispatcher } from '../../util/EventDispatcher';
+import { SterlingConnection } from '../sterling/SterlingConnection';
+import { EventDispatcher } from '../util/EventDispatcher';
 
 export interface Expression {
     id: number
@@ -24,7 +24,9 @@ class Evaluator extends EventDispatcher {
         this._expressions = [];
         this._pending = null;
 
-        connection.on('eval', this._parse.bind(this));
+        connection.addEventListener('eval', event => {
+            this._parse(event.data);
+        });
 
     }
 
@@ -78,9 +80,10 @@ class Evaluator extends EventDispatcher {
 
         this._setPending(expression);
 
-        const request = `EVL:${expression.id}:${expression.expression}`;
-
-        const submitted = this._connection.request(request);
+        const submitted = this._connection.requestEvaluateExpression(
+            expression.id,
+            expression.expression
+        );
 
         if (!submitted) {
 

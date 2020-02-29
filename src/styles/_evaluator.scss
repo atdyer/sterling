@@ -1,25 +1,26 @@
-@import "~@blueprintjs/core/lib/scss/variables";
+@import "../../node_modules/@blueprintjs/core/lib/scss/variables";
 
-.eval {
+.evaluator {
 
   display: flex;
-  flex-direction: column;
   flex: 1 0 auto;
+  flex-direction: column;
   height: 100%;
   max-height: 100%;
   overflow-y: hidden;
 
-  .eval-output {
+  .evaluator-output {
+
     overflow-y: auto;
-    height: calc(100% - 200px);
-    padding: 1em;
-    > div {
+    height: 100%;
+    max-height: 100%;
+
+    .bp3-callout {
       font-family: 'Fira Code', monospace;
       font-size: 12px;
-      margin-bottom: 1em;
-    }
-    .bp3-callout {
-      line-height: 1.25;
+      line-height: 1.33;
+      background-color: $pt-app-background-color;
+
       .bp3-heading {
         font-size: 14px;
         padding-bottom: 0.2em;
@@ -29,13 +30,17 @@
         left: 14px;
       }
     }
+
   }
 
-  .eval-input {
-    min-height: 200px;
+  .evaluator-input {
+
     display: flex;
+    min-height: 200px;
     font-family: 'Fira Code', monospace;
     font-size: 14px;
+    border-top: 2px solid rgba($dark-gray5, 0.3);
+
     textarea {
       flex: 1 0 auto;
       min-height: 125px;
@@ -43,11 +48,11 @@
       outline: none;
       padding: 0.75em;
       overflow-wrap: break-word;
-      background: rgba(16,22,26,.3);
-      color: $pt-dark-text-color;
+      background: $pt-code-background-color;
+      color: $pt-text-color;
       border: none;
-      box-shadow: $pt-dark-input-box-shadow;
     }
+
   }
 
 }
