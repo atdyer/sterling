@@ -3,8 +3,6 @@ import { AlloyInstance } from 'alloy-ts';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import SplitPane from 'react-split-pane';
-import { SterlingConnection } from './SterlingConnection';
-import { setInstance } from '../alloy/alloySlice';
 import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
@@ -14,9 +12,11 @@ import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
 import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
+import { SterlingConnection } from './SterlingConnection';
 import SterlingDrawer from './SterlingDrawer';
 import SterlingNavbar from './SterlingNavbar';
 import SterlingSidebar from './SterlingSidebar';
+import { setInstance } from './sterlingSlice';
 import SterlingStage from './SterlingStage';
 
 

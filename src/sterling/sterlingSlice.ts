@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { AlloyInstance } from 'alloy-ts';
 
 // Sterling view types
 export type MainView = 'graph' | 'table' | 'source';
@@ -8,6 +9,7 @@ export type SourceView = 'files' | 'evaluator' | null;
 
 // Sterling state
 export interface SterlingState {
+    instance: AlloyInstance | null
     mainView: MainView
     tableView: TableView
     graphView: GraphView
@@ -17,6 +19,7 @@ export interface SterlingState {
 }
 
 const initialState: SterlingState = {
+    instance: null,
     mainView: 'graph',
     tableView: 'settings',
     graphView: 'node',
@@ -34,6 +37,12 @@ const sterlingSlice = createSlice({
             state.graphView = action.payload === state.graphView
                 ? null
                 : action.payload;
+        },
+
+        setInstance (state, action: PayloadAction<AlloyInstance | null>) {
+
+            state.instance = action.payload;
+
         },
 
         setMainView (state, action: PayloadAction<MainView>) {
@@ -57,6 +66,7 @@ const sterlingSlice = createSlice({
 
 export const {
     setGraphView,
+    setInstance,
     setMainView,
     setSourceView,
     setTableView

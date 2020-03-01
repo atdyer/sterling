@@ -13,7 +13,7 @@ import SterlingDrawer from '../../../../sterling/SterlingDrawer';
 // Map redux state to layout settings props
 const mapState = (state: RootState) => ({
     graph: state.graphSlice.graphSlice.graph,
-    instance: state.alloySlice.instance
+    instance: state.sterlingSlice.instance
 });
 
 // Create connector

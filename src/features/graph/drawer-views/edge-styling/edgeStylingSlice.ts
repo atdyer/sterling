@@ -7,7 +7,7 @@ import {
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlloyField, AlloyInstance, AlloySkolem } from 'alloy-ts';
 import { Map } from 'immutable';
-import { setInstance } from '../../../../alloy/alloySlice';
+import { setInstance } from '../../../../sterling/sterlingSlice';
 import { Tree } from '../../graphTypes';
 import { buildFieldTree, buildSkolemTree } from './edgeTypes';
 

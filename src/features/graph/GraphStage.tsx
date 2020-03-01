@@ -32,7 +32,7 @@ const mapState = (state: RootState) => ({
     edgeLabels: state.graphSlice.edgeStylingSlice.labelStyles,
     graph: state.graphSlice.graphSlice.graph,
     hideDisconnected: state.graphSlice.nodeStylingSlice.hideDisconnected,
-    instance: state.alloySlice.instance,
+    instance: state.sterlingSlice.instance,
     links: state.graphSlice.edgeStylingSlice.linkStyles,
     nodeLabels: state.graphSlice.nodeStylingSlice.labels,
     projections: state.graphSlice.dataSlice.projections,

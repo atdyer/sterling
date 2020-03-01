@@ -45,6 +45,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build-forge": "REACT_APP_FORGE_BUILD=1 npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

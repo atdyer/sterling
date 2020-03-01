@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlloyInstance, AlloySkolem } from 'alloy-ts';
-import { setInstance } from '../../alloy/alloySlice';
+import { setInstance } from '../../sterling/sterlingSlice';
 import {
     HorizontalAlignment,
     LayoutDirection,

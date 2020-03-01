@@ -94,10 +94,19 @@ abstract class SterlingConnection extends EventDispatcher {
 
     private _handleXML (data: string): void {
 
-        this.dispatchEvent({
-            type: 'instance',
-            instance: new AlloyInstance(data)
-        });
+        if (data.length) {
+            try {
+                this.dispatchEvent({
+                    type: 'instance',
+                    instance: new AlloyInstance(data)
+                });
+            } catch (e) {
+                this.dispatchEvent({
+                    type: 'error',
+                    message: 'Invalid instance data'
+                });
+            }
+        }
 
     }
 
@@ -140,6 +149,7 @@ abstract class SterlingConnection extends EventDispatcher {
                 break;
             case 'XML:':
                 this._handleXML(data);
+                break;
             default:
                 this.dispatchEvent({
                     type: 'error',

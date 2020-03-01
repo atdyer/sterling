@@ -43,7 +43,7 @@ SyntaxHighlighter.registerLanguage('alloy', function () {
 });
 
 const mapState = (state: RootState) => ({
-    instance: state.alloySlice.instance,
+    instance: state.sterlingSlice.instance,
     selected: state.sourceSlice.selected,
     welcome: state.sterlingSlice.welcomeTitle,
     welcomeDescription: state.sterlingSlice.welcomeDescription

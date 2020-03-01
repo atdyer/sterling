@@ -11,7 +11,7 @@ import SterlingDrawer from '../../sterling/SterlingDrawer';
 import { setSelected } from './sourceSlice';
 
 const mapState = (state: RootState) => ({
-    instance: state.alloySlice.instance,
+    instance: state.sterlingSlice.instance,
     selected: state.sourceSlice.selected
 });
 

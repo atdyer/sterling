@@ -21,7 +21,7 @@ import {
 const mapState = (state: RootState) => ({
     ...state.tableSlice,
     description: state.sterlingSlice.welcomeDescription,
-    instance: state.alloySlice.instance,
+    instance: state.sterlingSlice.instance,
     title: state.sterlingSlice.welcomeTitle
 });
 

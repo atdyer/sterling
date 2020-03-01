@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AlloyInstance } from 'alloy-ts';
 import { List, Map } from 'immutable';
-import { setInstance } from '../../../../alloy/alloySlice'
+import { setInstance } from '../../../../sterling/sterlingSlice'
 
 export interface DataState {
     asAttribute: Map<string, boolean>
