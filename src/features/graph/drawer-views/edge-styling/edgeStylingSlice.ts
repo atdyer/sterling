@@ -9,6 +9,7 @@ import { AlloyField, AlloyInstance, AlloySkolem } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../../../sterling/sterlingSlice';
 import { Tree } from '../../graphTypes';
+import { COLOR_SCHEMES } from '../../util';
 import { buildFieldTree, buildSkolemTree } from './edgeTypes';
 
 export interface EdgeStylingState {
@@ -96,7 +97,7 @@ const edgeStylingSlice = createSlice({
                         styles.set(id, newlabel);
                     }
                 });
-            })
+            });
         },
         setLabelColor (state, action: PayloadAction<string|null>) {
             if (state.selected) {
@@ -177,6 +178,7 @@ const edgeStylingSlice = createSlice({
                 state.treeField = buildFieldTree(fields, state.hideEmptyFields);
                 state.treeSkolem = buildSkolemTree(skolems);
 
+                // Keep any existing label styles
                 state.labelStyles = Map(both.map(item => {
                     const id = item.id();
                     return state.labelStyles.has(id)
@@ -184,6 +186,7 @@ const edgeStylingSlice = createSlice({
                         : [id, {}]
                 }));
 
+                // Keep any exiting link styles
                 state.linkStyles = Map(both.map(item => {
                     const id = item.id();
                     return state.linkStyles.has(id)
@@ -191,6 +194,8 @@ const edgeStylingSlice = createSlice({
                         : [id, {}]
                 }));
 
+                // If they don't already exist, create empty link and label
+                // styles for the two categories we've got (fields and skolems)
                 if (!state.labelStyles.has('Fields'))
                     state.labelStyles = state.labelStyles.set('Fields', {});
                 if (!state.labelStyles.has('Skolems'))
@@ -199,6 +204,32 @@ const edgeStylingSlice = createSlice({
                     state.linkStyles = state.linkStyles.set('Fields', {});
                 if (!state.linkStyles.has('Skolems'))
                     state.linkStyles = state.linkStyles.set('Skolems', {});
+
+                // For the Forge folks, let's apply a default color scheme to
+                // anything that isn't already colored (except for the categories).
+                const defaultScheme = COLOR_SCHEMES[2][1];
+                state.linkStyles = state.linkStyles.withMutations(styles => {
+                    [...state.fields, ...state.skolems].forEach((item, index) => {
+                        const id = item.id();
+                        const link = state.linkStyles.get(id);
+                        if (link && !link.stroke) {
+                            const newlink = cloneLinkStyle(link);
+                            newlink.stroke = defaultScheme[index % defaultScheme.length];
+                            styles.set(id, newlink);
+                        }
+                    });
+                });
+                state.labelStyles = state.labelStyles.withMutations(styles => {
+                    [...state.fields, ...state.skolems].forEach((item, index) => {
+                        const id =item.id();
+                        const label = state.labelStyles.get(id);
+                        if (label && !label.color) {
+                            const newlabel = cloneLabelStyle(label);
+                            newlabel.color = defaultScheme[index % defaultScheme.length];
+                            styles.set(id, newlabel);
+                        }
+                    });
+                });
 
             } else {
 

@@ -1,7 +1,21 @@
 .nav {
+
   z-index: 19;
   display: flex;
   justify-content: space-between;
+
+  .bp3-button {
+    flex: 1 0 auto;
+  }
+
+  .collapsing {
+    flex: 0 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
 }
 
 .nav-heading {

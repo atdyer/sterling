@@ -82,7 +82,8 @@ class GraphStage extends React.Component<GraphStageProps> {
 
         if (instance) this._update(graph, instance);
 
-        if (!prevProps.instance || (instance && !anyInCommon(prevProps.instance, instance))) {
+        // Always update the layout for the Forge folks
+        if (!prevProps.instance || props.instance !== prevProps.instance) {
             const dagre = new DagreLayout();
             dagre.apply(graph, {
                 nodesep: 100,
@@ -90,6 +91,15 @@ class GraphStage extends React.Component<GraphStageProps> {
                 ranksep: 150
             });
         }
+
+        // if (!prevProps.instance || (instance && !anyInCommon(prevProps.instance, instance))) {
+        //     const dagre = new DagreLayout();
+        //     dagre.apply(graph, {
+        //         nodesep: 100,
+        //         rankdir: 'BT',
+        //         ranksep: 150
+        //     });
+        // }
 
         graph.update();
 
@@ -223,17 +233,17 @@ class GraphStage extends React.Component<GraphStageProps> {
 
 }
 
-function anyInCommon (a: AlloyInstance, b: AlloyInstance): boolean {
-    const atoms = new Set();
-    a.atoms().forEach(atom => {
-        if (!atom.type().isBuiltin()) atoms.add(atom.id());
-    });
-    const batoms = b.atoms();
-    for (let i=0; i<batoms.length; ++i) {
-        const atom = batoms[i];
-        if (!atom.type().isBuiltin() && atoms.has(atom.id())) return true;
-    }
-    return false;
-}
+// function anyInCommon (a: AlloyInstance, b: AlloyInstance): boolean {
+//     const atoms = new Set();
+//     a.atoms().forEach(atom => {
+//         if (!atom.type().isBuiltin()) atoms.add(atom.id());
+//     });
+//     const batoms = b.atoms();
+//     for (let i=0; i<batoms.length; ++i) {
+//         const atom = batoms[i];
+//         if (!atom.type().isBuiltin() && atoms.has(atom.id())) return true;
+//     }
+//     return false;
+// }
 
 export default connector(GraphStage);

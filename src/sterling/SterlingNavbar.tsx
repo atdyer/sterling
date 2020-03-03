@@ -8,8 +8,8 @@ import {
 } from '@blueprintjs/core';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { SterlingConnection } from './SterlingConnection';
 import { RootState } from '../rootReducer';
+import { SterlingConnection } from './SterlingConnection';
 import { setMainView } from './sterlingSlice';
 
 // Map redux state to navbar props
@@ -116,16 +116,16 @@ class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavba
                         />
                     <NavbarDivider/>
                 </Navbar.Group>
-                <Navbar.Group>
+                <Navbar.Group className={'collapsing'}>
                     {
                         state.command.length > 0 &&
                         <>
                             <Tag minimal={true}>
                                 {state.command}
                             </Tag>
-                            <NavbarDivider/>
                         </>
                     }
+                    <NavbarDivider/>
                     <Button disabled={!state.ready}
                             intent={state.connected ? 'success' : 'danger'}
                             large={true}

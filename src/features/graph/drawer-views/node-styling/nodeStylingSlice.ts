@@ -12,6 +12,7 @@ import { AlloyInstance, AlloySignature } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../../../sterling/sterlingSlice';
 import { Tree } from '../../graphTypes';
+import { COLOR_SCHEMES, foreground } from '../../util';
 import { buildTypeTree } from './nodeTypes';
 
 export interface NodeStylingState {
@@ -240,6 +241,34 @@ const nodeStylingSlice = createSlice({
                         ? [id, cloneShapeStyle(state.shapes.get(id)!)]
                         : [id, {}];
                 }));
+
+                // For the Forge folks, let's apply a default color scheme to
+                // top level signatures that aren't already colored.
+                const defaultScheme = COLOR_SCHEMES[0][1];
+                let next = 0;
+                state.shapes = state.shapes.withMutations(styles => {
+                    univ && univ.subTypes().forEach(signature => {
+                        const id = signature.id();
+                        const shape = state.shapes.get(id);
+                        if (shape && !shape.fill) {
+                            const newshape = cloneShapeStyle(shape);
+                            newshape.fill = defaultScheme[next++ % defaultScheme.length];
+                            styles.set(id, newshape);
+                        }
+                    });
+                });
+                state.labels = state.labels.withMutations(styles => {
+                    univ && univ.subTypes().forEach((signature, index) => {
+                        const id = signature.id();
+                        const shape = state.shapes.get(id);
+                        const label = state.labels.get(id);
+                        if (label && shape && shape.fill) {
+                            const newlabel = cloneLabelStyle(label);
+                            newlabel.color = foreground(shape.fill);
+                            styles.set(id, newlabel);
+                        }
+                    });
+                });
 
                 // If an item was selected, make sure it still exists
                 if (state.selected && !state.shapes.has(state.selected)){
