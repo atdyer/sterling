@@ -207,7 +207,9 @@ const edgeStylingSlice = createSlice({
 
                 // For the Forge folks, let's apply a default color scheme to
                 // anything that isn't already colored (except for the categories).
-                const defaultScheme = COLOR_SCHEMES[2][1];
+                const defaultScheme = COLOR_SCHEMES[2][1]
+                    .concat(COLOR_SCHEMES[1][1])
+                    .concat(COLOR_SCHEMES[0][1]);
                 state.linkStyles = state.linkStyles.withMutations(styles => {
                     [...state.fields, ...state.skolems].forEach((item, index) => {
                         const id = item.id();

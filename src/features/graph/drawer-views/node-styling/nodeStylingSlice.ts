@@ -244,10 +244,12 @@ const nodeStylingSlice = createSlice({
 
                 // For the Forge folks, let's apply a default color scheme to
                 // top level signatures that aren't already colored.
-                const defaultScheme = COLOR_SCHEMES[0][1];
+                const defaultScheme = COLOR_SCHEMES[0][1]
+                    .concat(COLOR_SCHEMES[1][1])
+                    .concat(COLOR_SCHEMES[2][1]);
                 let next = 0;
                 state.shapes = state.shapes.withMutations(styles => {
-                    univ && univ.subTypes().forEach(signature => {
+                    signatures.forEach(signature => {
                         const id = signature.id();
                         const shape = state.shapes.get(id);
                         if (shape && !shape.fill) {
@@ -258,7 +260,7 @@ const nodeStylingSlice = createSlice({
                     });
                 });
                 state.labels = state.labels.withMutations(styles => {
-                    univ && univ.subTypes().forEach((signature, index) => {
+                    signatures.forEach((signature, index) => {
                         const id = signature.id();
                         const shape = state.shapes.get(id);
                         const label = state.labels.get(id);

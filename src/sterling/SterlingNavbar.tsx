@@ -69,7 +69,6 @@ class SterlingNavbar extends React.Component<SterlingNavbarProps, ISterlingNavba
                 this.setState({ connected: false, ready: false });
             })
             .addEventListener('instance', event => {
-                console.log('instance');
                 this.setState({
                     command: event.instance.command(),
                     ready: this.state.connected

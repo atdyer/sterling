@@ -83,7 +83,9 @@ class GraphStage extends React.Component<GraphStageProps> {
         if (instance) this._update(graph, instance);
 
         // Always update the layout for the Forge folks
-        if (!prevProps.instance || props.instance !== prevProps.instance) {
+        const didProjectionsUpdate = prevProps.projections !== props.projections;
+
+        if (!prevProps.instance || props.instance !== prevProps.instance || didProjectionsUpdate) {
             const dagre = new DagreLayout();
             dagre.apply(graph, {
                 nodesep: 100,
