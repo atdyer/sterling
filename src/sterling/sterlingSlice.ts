@@ -22,7 +22,7 @@ const initialState: SterlingState = {
     instance: null,
     mainView: 'graph',
     tableView: 'settings',
-    graphView: 'node',
+    graphView: 'evaluator',
     sourceView: 'files',
     welcomeDescription: 'Use Alloy to generate an instance.',
     welcomeTitle: 'Welcome to Sterling'

@@ -1,6 +1,13 @@
-import { Callout, Icon, Intent } from '@blueprintjs/core';
+import {
+    Button,
+    Callout,
+    Icon,
+    Intent,
+    NonIdealState, Tooltip
+} from '@blueprintjs/core';
 import React from 'react';
 import { Evaluator, Expression } from './Evaluator';
+import EvaluatorTable from './EvaluatorTable';
 
 export interface IEvaluatorProps {
     evaluator: Evaluator
@@ -10,6 +17,7 @@ interface IEvaluatorState {
     count: number
     expressions: Expression[]
     history: number
+    table: boolean
 }
 
 class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
@@ -32,7 +40,8 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
         this.state = {
             count: expressions.length,
             expressions: expressions,
-            history: expressions.length
+            history: expressions.length,
+            table: false
         }
 
     }
@@ -73,18 +82,54 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
         return (
             <div className={'evaluator'}>
+                <div className={'evaluator-bar bp3-dark'}>
+                    <Tooltip
+                        content={'Clear'}
+                        hoverOpenDelay={500}
+                        intent={Intent.PRIMARY}>
+                        <Button
+                            small={true}
+                            minimal={true}
+                            icon={'clean'}
+                            onClick={() => {
+                                this.props.evaluator.clear();
+                                this.setState({
+                                    expressions: this.props.evaluator.expressions()
+                                });
+                            }}/>
+                    </Tooltip>
+                    <Tooltip
+                        content={state.table ? 'Display Text' : 'Display Tables'}
+                        hoverOpenDelay={500}
+                        intent={Intent.PRIMARY}>
+                        <Button
+                            small={true}
+                            minimal={true}
+                            icon={state.table ? 'align-left' : 'th'}
+                            onClick={() => this.setState({ table: !state.table })}/>
+                    </Tooltip>
+                </div>
                 <div className={'evaluator-output'}>
                     {
-                        this.state.expressions.map(expression => (
-                            <Callout
-                                key={expression.id}
-                                icon={expression.error ? ErrorIcon : SuccessIcon}
-                                title={expression.expression}
-                                intent={expression.error ? Intent.DANGER : Intent.NONE}
-                            >
-                                {expression.result}
-                            </Callout>
-                        ))
+                        state.expressions.length
+                            ? state.expressions.map(expression => (
+                                <Callout
+                                    key={expression.id}
+                                    icon={expression.error ? ErrorIcon : SuccessIcon}
+                                    title={expression.expression}
+                                    intent={expression.error ? Intent.DANGER : Intent.NONE}
+                                >
+                                    {
+                                        state.table && isTableable(expression) && typeof expression.result === 'string'
+                                            ? <EvaluatorTable result={expression.result}/>
+                                            : expression.result
+                                    }
+                                </Callout>
+                            ))
+                            : <NonIdealState
+                                title={'Evaluator'}
+                                description={'Enter an expression below'}
+                                icon={'console'}/>
                     }
                     <div ref={this._botRef}/>
                 </div>
@@ -236,6 +281,14 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
     };
 
+}
+
+function isTableable (expression: Expression): boolean {
+    const r = expression.result;
+    return !expression.error
+        && typeof r === 'string'
+        && r.length > 0
+        && r[0] === '{' && r[r.length-1] === '}';
 }
 
 export default EvaluatorView;

@@ -30,6 +30,12 @@ class Evaluator extends EventDispatcher {
 
     }
 
+    clear (): void {
+
+        this._expressions = [];
+
+    }
+
     evaluate (expression: string): void {
 
         this._request({
