@@ -44,8 +44,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "build-forge": "REACT_APP_FORGE_BUILD=1 npm run build",
+    "start-static": "REACT_APP_BUILD_TARGET=static react-scripts start",
+    "build":        "REACT_APP_BUILD_TARGET=alloy  react-scripts build",
+    "build-forge":  "REACT_APP_BUILD_TARGET=forge  npm run build",
+    "build-static": "REACT_APP_BUILD_TARGET=static npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

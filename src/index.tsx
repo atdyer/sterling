@@ -4,13 +4,16 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { AlloyConnection } from './connections/AlloyConnection';
 import { ForgeConnection } from './connections/ForgeConnection';
+import NoConnection from './connections/NoConnection';
 import { sterlingApp } from './rootReducer';
 import Sterling from './sterling/Sterling';
 import * as serviceWorker from './serviceWorker';
 import './styles/index.scss';
 
-const connection = process.env.REACT_APP_FORGE_BUILD
-    ? new ForgeConnection()
+const target = process.env.REACT_APP_BUILD_TARGET;
+const connection = target === 'alloy' ? new AlloyConnection()
+    : target === 'forge' ? new ForgeConnection()
+    : target === 'static' ? new NoConnection()
     : new AlloyConnection();
 const store = createStore(sterlingApp);
 

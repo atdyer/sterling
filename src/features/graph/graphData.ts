@@ -7,15 +7,16 @@ import {
     AlloySkolem,
     AlloyTuple
 } from 'alloy-ts';
-import { Map, Set } from 'immutable';
+import { Map as IMap, Set } from 'immutable';
 import { isDefined } from 'ts-is-present';
 
 function generateGraph (
     instance: AlloyInstance,
     existingNodes: Node[],
-    projections: Map<string, string>,
-    attributes: Map<string, boolean>,
-    hideDisconnected: Map<string, boolean>
+    nodeCache: Map<string, Node>,
+    projections: IMap<string, string>,
+    attributes: IMap<string, boolean>,
+    hideDisconnected: IMap<string, boolean>
 ): [Node[], Edge[]] {
 
     /**
@@ -43,7 +44,7 @@ function generateGraph (
 
     // Create a map of Signature objects to their projected Atom objects and a
     // set of all projected atoms
-    const _projections: Map<AlloySignature, AlloyAtom|undefined> = Map(instance.signatures().map(sig => {
+    const _projections: IMap<AlloySignature, AlloyAtom|undefined> = IMap(instance.signatures().map(sig => {
         const id = sig.id();
         return projections.has(id)
             ? [sig, getAtom(projections.get(id)!)]
@@ -51,7 +52,7 @@ function generateGraph (
     }));
 
     // Project every tuple of every field, remove empty tuples and empty fields
-    const fields = Map<AlloyField, AlloyTuple[]>(instance.fields().map(field => {
+    const fields = IMap<AlloyField, AlloyTuple[]>(instance.fields().map(field => {
         return [
             field,
             field.tuples().map(project).filter(isDefined).filter(hasAtoms)
@@ -59,7 +60,7 @@ function generateGraph (
     })).filter(tuples => tuples.length > 0);
 
     // Project every tuple of every skolem, remove empty tuples and empty skolems
-    const skolems = Map<AlloySkolem, AlloyTuple[]>(instance.skolems().map(skolem => {
+    const skolems = IMap<AlloySkolem, AlloyTuple[]>(instance.skolems().map(skolem => {
         return [
             skolem,
             skolem.tuples().map(project).filter(isDefined).filter(hasAtoms)
@@ -114,7 +115,7 @@ function generateGraph (
     });
 
     // Create the labels for each atom
-    const labelMap = Map<AlloyAtom, string[]>()
+    const labelMap = IMap<AlloyAtom, string[]>()
         .withMutations(map => {
 
             labelFields.forEach(addLabel);
@@ -123,7 +124,7 @@ function generateGraph (
             function addLabel (tuples: AlloyTuple[], item: AlloyField|AlloySkolem) {
 
                 // Create a map of atoms to labels for this particular field/skolem
-                const labels = Map<AlloyAtom, string[]>()
+                const labels = IMap<AlloyAtom, string[]>()
                     .withMutations(labels => {
                         tuples.forEach(tuple => {
                             const atoms = tuple.atoms();
@@ -162,11 +163,13 @@ function generateGraph (
         if (visible) {
 
             // If it's visible, look for an existing node, otherwise create a new one
-            const node = existingNodes.find(node => node.id === atom.name()) || {
-                id: atom.name(),
-                x: 0,
-                y: 0
-            };
+            const node = existingNodes.find(node => node.id === atom.name())
+                || nodeCache.get(atom.name())
+                || {
+                    id: atom.name(),
+                    x: 0,
+                    y: 0
+                };
 
             // Get any labels associated with this atom
             node.labels = labelMap.get(atom);

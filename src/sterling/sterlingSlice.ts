@@ -21,8 +21,8 @@ export interface SterlingState {
 const initialState: SterlingState = {
     instance: null,
     mainView: 'graph',
-    tableView: 'settings',
-    graphView: 'evaluator',
+    tableView: null,
+    graphView: null,
     sourceView: 'files',
     welcomeDescription: 'Use Alloy to generate an instance.',
     welcomeTitle: 'Welcome to Sterling'

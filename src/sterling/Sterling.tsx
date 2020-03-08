@@ -7,6 +7,7 @@ import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
 import GraphStage from '../features/graph/GraphStage';
+import StaticNavbar from '../features/nav/StaticNavbar';
 import SourceDrawer from '../features/source/SourceDrawer';
 import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
@@ -14,7 +15,7 @@ import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
 import { SterlingConnection } from './SterlingConnection';
 import SterlingDrawer from './SterlingDrawer';
-import SterlingNavbar from './SterlingNavbar';
+import SterlingNavbar from '../features/nav/SterlingNavbar';
 import SterlingSidebar from './SterlingSidebar';
 import { setInstance } from './sterlingSlice';
 import SterlingStage from './SterlingStage';
@@ -83,7 +84,9 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         return (
             <ResizeSensor onResize={this._resize}>
                 <div className={'sterling'}>
-                    <SterlingNavbar connection={props.connection}/>
+                    {
+                        this._getNavbar()
+                    }
                     <SterlingSidebar/>
                     {
                         !drawerOpen
@@ -132,6 +135,21 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
 
     };
 
+    private _getNavbar = (): React.ReactNode => {
+
+        const target = process.env.REACT_APP_BUILD_TARGET;
+        switch (target) {
+            case 'static':
+                return <StaticNavbar/>;
+            case 'alloy':
+            case 'forge':
+            default:
+                return <SterlingNavbar connection={this.props.connection}/>;
+
+        }
+
+    };
+
     private _getStage = (): React.ReactNode => {
 
         const view = this.props.mainView;
@@ -159,14 +177,6 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         connection.addEventListener('instance', event => {
             this.props.setInstance(event.instance);
         });
-
-        // connection
-        //     .on('connect', () => {
-        //         connection.request('current');
-        //     })
-        //     .on('instance', (instance: AlloyInstance) => {
-        //         this.props.setInstance(instance);
-        //     });
 
         connection.connect();
 

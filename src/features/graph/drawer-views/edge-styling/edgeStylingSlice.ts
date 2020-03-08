@@ -201,9 +201,13 @@ const edgeStylingSlice = createSlice({
                 if (!state.labelStyles.has('Skolems'))
                     state.labelStyles = state.labelStyles.set('Skolems', {});
                 if (!state.linkStyles.has('Fields'))
-                    state.linkStyles = state.linkStyles.set('Fields', {});
+                    state.linkStyles = state.linkStyles.set('Fields', {
+                        strokeWidth: 2
+                    });
                 if (!state.linkStyles.has('Skolems'))
-                    state.linkStyles = state.linkStyles.set('Skolems', {});
+                    state.linkStyles = state.linkStyles.set('Skolems', {
+                        strokeWidth: 2
+                    });
 
                 // For the Forge folks, let's apply a default color scheme to
                 // anything that isn't already colored (except for the categories).

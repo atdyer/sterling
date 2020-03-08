@@ -1,7 +1,7 @@
 import {
     cloneLabelStyle,
     cloneShapeStyle, DagreLayout,
-    EdgeStyle, Graph,
+    EdgeStyle, Graph, Node,
     NodeStyle
 } from '@atdyer/graph-js';
 import { NonIdealState } from '@blueprintjs/core';
@@ -47,6 +47,9 @@ const connector = connect(mapState);
 // Create props for things from redux
 type GraphStageProps = ConnectedProps<typeof connector>;
 
+// Create a node cache
+const NODE_CACHE = new Map<string, Node>();
+
 // The graph stage component
 class GraphStage extends React.Component<GraphStageProps> {
 
@@ -79,22 +82,14 @@ class GraphStage extends React.Component<GraphStageProps> {
         const props = this.props;
         const graph = props.graph;
         const instance = props.instance;
+        const common = prevProps.instance && instance ? anyInCommon(prevProps.instance, instance) : false;
 
         if (instance) this._update(graph, instance);
 
         // Always update the layout for the Forge folks
-        const didProjectionsUpdate = prevProps.projections !== props.projections;
-
-        if (!prevProps.instance || props.instance !== prevProps.instance || didProjectionsUpdate) {
-            const dagre = new DagreLayout();
-            dagre.apply(graph, {
-                nodesep: 100,
-                rankdir: 'BT',
-                ranksep: 150
-            });
-        }
-
-        // if (!prevProps.instance || (instance && !anyInCommon(prevProps.instance, instance))) {
+        // const didProjectionsUpdate = prevProps.projections !== props.projections;
+        //
+        // if (!prevProps.instance || props.instance !== prevProps.instance || didProjectionsUpdate) {
         //     const dagre = new DagreLayout();
         //     dagre.apply(graph, {
         //         nodesep: 100,
@@ -102,6 +97,19 @@ class GraphStage extends React.Component<GraphStageProps> {
         //         ranksep: 150
         //     });
         // }
+
+        if (!common) {
+            NODE_CACHE.clear();
+        }
+
+        if (!prevProps.instance || (instance && !common)) {
+            const dagre = new DagreLayout();
+            dagre.apply(graph, {
+                nodesep: 100,
+                rankdir: 'BT',
+                ranksep: 150
+            });
+        }
 
         graph.update();
 
@@ -203,10 +211,14 @@ class GraphStage extends React.Component<GraphStageProps> {
             const [nodes, edges] = generateGraph(
                 instance,
                 graph.nodes(),
+                NODE_CACHE,
                 props.projections,
                 props.asAttribute,
                 props.hideDisconnected
             );
+
+            // Cache the nodes
+            nodes.forEach(node => NODE_CACHE.set(node.id, node));
 
             // Set the nodes and edges
             graph.nodes(nodes);
@@ -235,17 +247,17 @@ class GraphStage extends React.Component<GraphStageProps> {
 
 }
 
-// function anyInCommon (a: AlloyInstance, b: AlloyInstance): boolean {
-//     const atoms = new Set();
-//     a.atoms().forEach(atom => {
-//         if (!atom.type().isBuiltin()) atoms.add(atom.id());
-//     });
-//     const batoms = b.atoms();
-//     for (let i=0; i<batoms.length; ++i) {
-//         const atom = batoms[i];
-//         if (!atom.type().isBuiltin() && atoms.has(atom.id())) return true;
-//     }
-//     return false;
-// }
+function anyInCommon (a: AlloyInstance, b: AlloyInstance): boolean {
+    const atoms = new Set();
+    a.atoms().forEach(atom => {
+        if (!atom.type().isBuiltin()) atoms.add(atom.id());
+    });
+    const batoms = b.atoms();
+    for (let i=0; i<batoms.length; ++i) {
+        const atom = batoms[i];
+        if (!atom.type().isBuiltin() && atoms.has(atom.id())) return true;
+    }
+    return false;
+}
 
 export default connector(GraphStage);
