@@ -44,8 +44,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-static": "REACT_APP_BUILD_TARGET=static react-scripts start",
-    "build":        "REACT_APP_BUILD_TARGET=alloy  react-scripts build",
+    "start-alloy":  "REACT_APP_BUILD_TARGET=alloy  npm run start",
+    "start-static": "REACT_APP_BUILD_TARGET=static npm run start",
+    "build": "react-scripts build",
+    "build-alloy":  "REACT_APP_BUILD_TARGET=alloy  npm run build",
     "build-forge":  "REACT_APP_BUILD_TARGET=forge  npm run build",
     "build-static": "REACT_APP_BUILD_TARGET=static npm run build",
     "test": "react-scripts test",
