@@ -6,6 +6,9 @@ export type Ranker = 'network-simplex' | 'tight-tree' | 'longest-path';
 
 export interface LayoutState {
     align: Alignment
+    collapseLayout: boolean
+    collapseQuickLayout: boolean
+    collapseZoom: boolean
     nodesep: number
     rankdir: Direction
     ranker: Ranker
@@ -14,6 +17,9 @@ export interface LayoutState {
 
 const initialState: LayoutState = {
     align: undefined,
+    collapseLayout: false,
+    collapseQuickLayout: false,
+    collapseZoom: false,
     nodesep: 100,
     rankdir: 'BT',
     ranker: 'network-simplex',
@@ -38,6 +44,15 @@ const layoutSlice = createSlice({
         },
         setRankSep (state, action: PayloadAction<number>) {
             state.ranksep = action.payload;
+        },
+        toggleCollapseLayout (state) {
+            state.collapseLayout = !state.collapseLayout;
+        },
+        toggleCollapseQuickLayout (state) {
+            state.collapseQuickLayout = !state.collapseQuickLayout;
+        },
+        toggleCollapseZoom (state) {
+            state.collapseZoom = !state.collapseZoom;
         }
     }
 });
@@ -47,6 +62,9 @@ export const {
     setNodeSep,
     setRankDir,
     setRanker,
-    setRankSep
+    setRankSep,
+    toggleCollapseLayout,
+    toggleCollapseQuickLayout,
+    toggleCollapseZoom
 } = layoutSlice.actions;
 export default layoutSlice.reducer;

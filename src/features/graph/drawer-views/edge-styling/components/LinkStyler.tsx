@@ -40,7 +40,7 @@ const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
                             backgroundColor: background(stroke),
                             color: foreground(stroke)
                         }}
-                        text={stroke || 'Inheret'}
+                        text={stroke || 'Inherit'}
                         minimal={true}/>
                     <TwitterPicker
                         color={background(stroke)}
@@ -55,7 +55,7 @@ const LinkStyler: React.FunctionComponent<ILinkStyle> = props => {
                     fill={false}
                     min={0}
                     onValueChange={(_, strVal) => props.onChangeStrokeWidth(strVal)}
-                    placeholder={'Inheret'}
+                    placeholder={'Inherit'}
                     value={props.strokeWidth}/>
             </FormGroup>
         </>

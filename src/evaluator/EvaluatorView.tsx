@@ -20,6 +20,11 @@ interface IEvaluatorState {
     table: boolean
 }
 
+const MESSAGE = 'The evaluator allows you to type in Alloy expressions and see ' +
+    'their values. For example, \'univ\' shows the list of atoms. Type an ' +
+    'expression below and press Enter to evaluate (you can press the up and down ' +
+    'arrow keys to recall old inputs).';
+
 class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
 
     private readonly _botRef: React.RefObject<HTMLDivElement>;
@@ -73,7 +78,7 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
     render (): React.ReactNode {
 
         const state = this.state;
-        const SuccessIcon = <Icon icon={'circle'} iconSize={12}/>;
+        const SuccessIcon = <Icon icon={'blank'} iconSize={12}/>;
         const ErrorIcon = <Icon icon={'cross'} iconSize={12}/>;
 
         state.history < state.count
@@ -93,8 +98,11 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
                             icon={'clean'}
                             onClick={() => {
                                 this.props.evaluator.clear();
+                                const expressions = this.props.evaluator.expressions();
                                 this.setState({
-                                    expressions: this.props.evaluator.expressions()
+                                    expressions: expressions,
+                                    count: expressions.length,
+                                    history: expressions.length
                                 });
                             }}/>
                     </Tooltip>
@@ -128,7 +136,7 @@ class EvaluatorView extends React.Component<IEvaluatorProps, IEvaluatorState> {
                             ))
                             : <NonIdealState
                                 title={'Evaluator'}
-                                description={'Enter an expression below'}
+                                description={MESSAGE}
                                 icon={'console'}/>
                     }
                     <div ref={this._botRef}/>

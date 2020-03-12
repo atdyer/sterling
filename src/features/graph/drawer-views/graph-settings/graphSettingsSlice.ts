@@ -11,11 +11,11 @@ export interface GraphSettingsState {
 }
 
 const initialState: GraphSettingsState = {
-    axesVisible: true,
+    axesVisible: false,
     bundleFactor: 0.15,
     collapseEdgeSettings: false,
     collapseGraphSettings: false,
-    gridVisible: true,
+    gridVisible: false,
     edgeLabelPlacement: 'spread'
 };
 

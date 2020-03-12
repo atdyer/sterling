@@ -8,6 +8,7 @@ import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
 import GraphStage from '../features/graph/GraphStage';
 import StaticNavbar from '../features/nav/StaticNavbar';
+import SterlingNavbar from '../features/nav/SterlingNavbar';
 import SourceDrawer from '../features/source/SourceDrawer';
 import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
@@ -15,7 +16,7 @@ import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
 import { SterlingConnection } from './SterlingConnection';
 import SterlingDrawer from './SterlingDrawer';
-import SterlingNavbar from '../features/nav/SterlingNavbar';
+import SterlingKeyboard from './SterlingKeyboard';
 import SterlingSidebar from './SterlingSidebar';
 import { setInstance } from './sterlingSlice';
 import SterlingStage from './SterlingStage';
@@ -82,30 +83,30 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
             (props.mainView === 'source' && props.sourceView !== null);
 
         return (
-            <ResizeSensor onResize={this._resize}>
-                <div className={'sterling'}>
-                    {
-                        this._getNavbar()
-                    }
-                    <SterlingSidebar/>
-                    {
-                        !drawerOpen
-                            ? this._getStage()
-                            : (
-                                <SplitPane
-                                    split={'vertical'}
-                                    defaultSize={350}
-                                    minSize={150}
-                                    maxSize={-150}
-                                    onChange={this._resize}
-                                >
-                                    { this._getDrawer() }
-                                    { this._getStage() }
-                                </SplitPane>
-                            )
-                    }
-                </div>
-            </ResizeSensor>
+                <ResizeSensor onResize={this._resize}>
+                    <SterlingKeyboard>
+                        {
+                            this._getNavbar()
+                        }
+                        <SterlingSidebar/>
+                        {
+                            !drawerOpen
+                                ? this._getStage()
+                                : (
+                                    <SplitPane
+                                        split={'vertical'}
+                                        defaultSize={350}
+                                        minSize={150}
+                                        maxSize={-150}
+                                        onChange={this._resize}
+                                    >
+                                        { this._getDrawer() }
+                                        { this._getStage() }
+                                    </SplitPane>
+                                )
+                        }
+                    </SterlingKeyboard>
+                </ResizeSensor>
         )
 
     }

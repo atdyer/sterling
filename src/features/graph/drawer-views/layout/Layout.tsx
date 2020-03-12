@@ -10,7 +10,8 @@ import {
     setNodeSep,
     setRankDir,
     setRanker,
-    setRankSep
+    setRankSep,
+    toggleCollapseLayout
 } from './layoutSlice';
 
 const ALIGN_OPTIONS = [
@@ -35,6 +36,7 @@ const RANKER_OPTIONS = [
 ];
 
 const mapState = (state: RootState) => ({
+    collapseLayout: state.graphSlice.layoutSlice.collapseLayout,
     graph: state.graphSlice.graphSlice.graph,
     options: state.graphSlice.layoutSlice
 });
@@ -44,7 +46,8 @@ const mapDispatch = {
     setNodeSep,
     setRankDir,
     setRanker,
-    setRankSep
+    setRankSep,
+    toggleCollapseLayout
 };
 
 const connector = connect(mapState, mapDispatch);
@@ -57,6 +60,8 @@ const Layout: React.FunctionComponent<LayoutProps> = props => {
 
     return (
         <SterlingDrawer.Section
+            collapsed={props.collapseLayout}
+            onToggle={props.toggleCollapseLayout}
             title={'Layout'}>
             <FormGroup inline={true} label={'Align'}>
                 <HTMLSelect

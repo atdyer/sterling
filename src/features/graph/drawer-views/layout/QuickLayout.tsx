@@ -9,15 +9,21 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
+import { toggleCollapseQuickLayout } from './layoutSlice';
 
 // Map redux state to layout settings props
 const mapState = (state: RootState) => ({
+    collapseQuickLayout: state.graphSlice.layoutSlice.collapseQuickLayout,
     graph: state.graphSlice.graphSlice.graph,
     instance: state.sterlingSlice.instance
 });
 
+const mapDispatch = {
+    toggleCollapseQuickLayout
+};
+
 // Create connector
-const connector = connect(mapState);
+const connector = connect(mapState, mapDispatch);
 
 // Create props for things from redux
 type LayoutProps = ConnectedProps<typeof connector>;
@@ -25,7 +31,10 @@ type LayoutProps = ConnectedProps<typeof connector>;
 // The layout and projections component
 const QuickLayout: React.FunctionComponent<LayoutProps> = props => {
     return (
-        <SterlingDrawer.Section title={'Quick Layout'}>
+        <SterlingDrawer.Section
+            collapsed={props.collapseQuickLayout}
+            onToggle={props.toggleCollapseQuickLayout}
+            title={'Quick Layout'}>
             <ButtonGroup minimal={true}>
                 <Tooltip content={'Circle Layout'}>
                     <Button icon={'layout-circle'} onClick={() => {

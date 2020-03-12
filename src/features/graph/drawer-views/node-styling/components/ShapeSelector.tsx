@@ -13,10 +13,10 @@ interface IShapeSelector {
 const ShapeSelector: React.FunctionComponent<IShapeSelector> = props => {
 
     const shape = props.shape;
-    const type = shape ? shape.type || 'inheret' : 'inheret';
+    const type = shape ? shape.type || 'inherit' : 'inherit';
 
     const options = [
-        { value: 'inheret', label: 'Inheret' },
+        { value: 'inherit', label: 'Inherit' },
         { value: 'circle', label: 'Circle' },
         { value: 'rectangle', label: 'Rectangle' }
     ];
@@ -63,7 +63,7 @@ const CircleProps: React.FunctionComponent<ICircleProps> = props => {
                 fill={false}
                 min={0}
                 onValueChange={(_, strVal) => props.onSetRadius(strVal)}
-                placeholder={'Inheret'}
+                placeholder={'Inherit'}
                 value={radius || undefined}/>
         </FormGroup>
     )
@@ -84,7 +84,7 @@ const RectangleProps: React.FunctionComponent<IRectangleProps> = props => {
                 fill={false}
                 min={0}
                 onValueChange={(_, strVal) => props.onSetWidth(strVal)}
-                placeholder={'Inheret'}
+                placeholder={'Inherit'}
                 value={width || undefined}
                 />
         </FormGroup>
@@ -93,7 +93,7 @@ const RectangleProps: React.FunctionComponent<IRectangleProps> = props => {
                 allowNumericCharactersOnly={true}
                 min={0}
                 onValueChange={(_, strVal) => props.onSetHeight(strVal)}
-                placeholder={'Inheret'}
+                placeholder={'Inherit'}
                 value={height || undefined}
             />
         </FormGroup>
