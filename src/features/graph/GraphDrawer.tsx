@@ -5,6 +5,7 @@ import QuickEdgeStyling from './drawer-views/edge-styling/QuickEdgeStyling';
 import EdgeSettings from './drawer-views/graph-settings/EdgeSettings';
 import Layout from './drawer-views/layout/Layout';
 import ZoomSettings from './drawer-views/layout/ZoomSettings';
+import QuickNodeStyling from './drawer-views/node-styling/QuickNodeStyling';
 import Projections from './drawer-views/projections/Projections';
 import EdgeStyling from './drawer-views/edge-styling/EdgeStyling';
 import GraphSettings from './drawer-views/graph-settings/GraphSettings';
@@ -28,6 +29,7 @@ const GraphDrawer: React.FunctionComponent<GraphStageProps> = props => {
     if (props.view === 'node') return (
         <>
             <Projections/>
+            <QuickNodeStyling/>
             <NodeStyling/>
         </>
     );

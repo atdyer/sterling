@@ -18,24 +18,28 @@ import { buildTypeTree } from './nodeTypes';
 export interface NodeStylingState {
     collapsed: Map<string, boolean>
     collapseNodeStyle: boolean
+    collapseScheme: boolean
     hideDisconnected: Map<string, boolean>
     hideEmptySets: boolean
     labels: Map<string, LabelStyle>
     nodeTree: Tree | null
     selected: string | null
     shapes: Map<string, ShapeStyle>
+    signatures: AlloySignature[]
     univ: AlloySignature | null
 }
 
 const initialState: NodeStylingState = {
     collapsed: Map(),
     collapseNodeStyle: false,
+    collapseScheme: false,
     hideDisconnected: Map(),
     hideEmptySets: true,
     labels: Map(),
     nodeTree: null,
     selected: null,
     shapes: Map(),
+    signatures: [],
     univ: null
 };
 
@@ -64,6 +68,58 @@ const nodeStylingSlice = createSlice({
         selectTreeNode (state, action: PayloadAction<string>) {
             const target = action.payload;
             if (state.shapes.has(target)) state.selected = target;
+        },
+        setColorScheme (state, action: PayloadAction<string[]>) {
+            const colors = action.payload;
+            if (!colors.length) return;
+            state.shapes = state.shapes.withMutations(styles => {
+                let next = 0;
+                state.signatures.forEach(signature => {
+                    const id = signature.id();
+                    const shape = state.shapes.get(id);
+                    if (shape && signature.atoms().length) {
+                        const newshape = cloneShapeStyle(shape);
+                        newshape.fill = colors[next++ % colors.length];
+                        styles.set(id, newshape);
+                    }
+                });
+            });
+            state.labels = state.labels.withMutations(styles => {
+                state.signatures.forEach(signature => {
+                    const id = signature.id();
+                    const shape = state.shapes.get(id);
+                    const label = state.labels.get(id);
+                    if (label && shape && shape.fill) {
+                        const newlabel = cloneLabelStyle(label);
+                        newlabel.color = foreground(shape.fill);
+                        styles.set(id, newlabel);
+                    }
+                });
+            })
+
+            // state.shapes = state.shapes.withMutations(styles => {
+            //     signatures.forEach(signature => {
+            //         const id = signature.id();
+            //         const shape = state.shapes.get(id);
+            //         if (shape && !shape.fill) {
+            //             const newshape = cloneShapeStyle(shape);
+            //             newshape.fill = '#ffd700';
+            //             styles.set(id, newshape);
+            //         }
+            //     });
+            // });
+            // state.labels = state.labels.withMutations(styles => {
+            //     signatures.forEach((signature) => {
+            //         const id = signature.id();
+            //         const shape = state.shapes.get(id);
+            //         const label = state.labels.get(id);
+            //         if (label && shape && shape.fill) {
+            //             const newlabel = cloneLabelStyle(label);
+            //             newlabel.color = foreground(shape.fill);
+            //             styles.set(id, newlabel);
+            //         }
+            //     });
+            // });
         },
         setFill (state, action: PayloadAction<string|null>) {
             if (state.selected) {
@@ -186,6 +242,9 @@ const nodeStylingSlice = createSlice({
         toggleCollapseNodeStyle (state) {
             state.collapseNodeStyle = !state.collapseNodeStyle;
         },
+        toggleCollapseScheme (state) {
+            state.collapseScheme = !state.collapseScheme;
+        },
         toggleHideDisconnected (state) {
             const selected = state.selected;
             if (selected) {
@@ -207,6 +266,7 @@ const nodeStylingSlice = createSlice({
 
                 const signatures = instance.signatures();
                 const univ = signatures.find(sig => sig.id() === 'univ') || null;
+                state.signatures = signatures;
 
                 // Build the signature tree using only IDs
                 state.univ = univ;
@@ -242,25 +302,20 @@ const nodeStylingSlice = createSlice({
                         : [id, {}];
                 }));
 
-                // For the Forge folks, let's apply a default color scheme to
-                // top level signatures that aren't already colored.
-                const defaultScheme = COLOR_SCHEMES[0][1]
-                    .concat(COLOR_SCHEMES[1][1])
-                    .concat(COLOR_SCHEMES[2][1]);
-                let next = 0;
+                // Any nodes not already colored, give a color
                 state.shapes = state.shapes.withMutations(styles => {
                     signatures.forEach(signature => {
                         const id = signature.id();
                         const shape = state.shapes.get(id);
                         if (shape && !shape.fill) {
                             const newshape = cloneShapeStyle(shape);
-                            newshape.fill = defaultScheme[next++ % defaultScheme.length];
+                            newshape.fill = '#ecd12e';
                             styles.set(id, newshape);
                         }
                     });
                 });
                 state.labels = state.labels.withMutations(styles => {
-                    signatures.forEach((signature, index) => {
+                    signatures.forEach((signature) => {
                         const id = signature.id();
                         const shape = state.shapes.get(id);
                         const label = state.labels.get(id);
@@ -298,6 +353,7 @@ export const {
     collapseTreeNode,
     expandTreeNode,
     selectTreeNode,
+    setColorScheme,
     setFill,
     setHeight,
     setLabelColor,
@@ -308,6 +364,7 @@ export const {
     setStrokeWidth,
     setWidth,
     toggleCollapseNodeStyle,
+    toggleCollapseScheme,
     toggleHideDisconnected,
     toggleHideEmptySets
 } = nodeStylingSlice.actions;

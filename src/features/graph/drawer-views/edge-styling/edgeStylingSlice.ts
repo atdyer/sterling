@@ -214,25 +214,29 @@ const edgeStylingSlice = createSlice({
                 const defaultScheme = COLOR_SCHEMES[2][1]
                     .concat(COLOR_SCHEMES[1][1])
                     .concat(COLOR_SCHEMES[0][1]);
+                let nextColor = 0;
                 state.linkStyles = state.linkStyles.withMutations(styles => {
-                    [...state.fields, ...state.skolems].forEach((item, index) => {
+                    [...state.fields, ...state.skolems].forEach((item) => {
                         const id = item.id();
                         const link = state.linkStyles.get(id);
-                        if (link && !link.stroke) {
+                        if (link && !link.stroke && item.tuples().length) {
                             const newlink = cloneLinkStyle(link);
-                            newlink.stroke = defaultScheme[index % defaultScheme.length];
+                            newlink.stroke = defaultScheme[nextColor % defaultScheme.length];
                             styles.set(id, newlink);
+                            nextColor += 1;
                         }
                     });
                 });
+                nextColor = 0;
                 state.labelStyles = state.labelStyles.withMutations(styles => {
-                    [...state.fields, ...state.skolems].forEach((item, index) => {
+                    [...state.fields, ...state.skolems].forEach((item) => {
                         const id =item.id();
                         const label = state.labelStyles.get(id);
-                        if (label && !label.color) {
+                        if (label && !label.color && item.tuples().length) {
                             const newlabel = cloneLabelStyle(label);
-                            newlabel.color = defaultScheme[index % defaultScheme.length];
+                            newlabel.color = defaultScheme[nextColor % defaultScheme.length];
                             styles.set(id, newlabel);
+                            nextColor += 1;
                         }
                     });
                 });

@@ -3,10 +3,10 @@ import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../../../rootReducer';
 import SterlingDrawer from '../../../../sterling/SterlingDrawer';
 import QuickColorScheme from '../../drawer-components/QuickColorScheme';
-import { setColorScheme, toggleCollapseScheme } from './edgeStylingSlice';
+import { setColorScheme, toggleCollapseScheme } from './nodeStylingSlice';
 
 const mapState = (state: RootState) => ({
-    collapse: state.graphSlice.edgeStylingSlice.collapseScheme
+    collapse: state.graphSlice.nodeStylingSlice.collapseScheme
 });
 
 const mapDispatch = {
@@ -16,9 +16,9 @@ const mapDispatch = {
 
 const connector = connect(mapState, mapDispatch);
 
-type QuickEdgeStylingProps = ConnectedProps<typeof connector>;
+type QuickNodeStylingProps = ConnectedProps<typeof connector>;
 
-const QuickEdgeStyling: React.FunctionComponent<QuickEdgeStylingProps> = props => {
+const QuickNodeStyling: React.FunctionComponent<QuickNodeStylingProps> = props => {
 
     return (
         <SterlingDrawer.Section
@@ -27,7 +27,8 @@ const QuickEdgeStyling: React.FunctionComponent<QuickEdgeStylingProps> = props =
             title={'Quick Color Scheme'}>
             <QuickColorScheme onClick={props.setColorScheme}/>
         </SterlingDrawer.Section>
-    );
+    )
+
 };
 
-export default connector(QuickEdgeStyling);
+export default connector(QuickNodeStyling);
