@@ -12,7 +12,7 @@ import { AlloyInstance, AlloySignature } from 'alloy-ts';
 import { Map } from 'immutable';
 import { setInstance } from '../../../../sterling/sterlingSlice';
 import { Tree } from '../../graphTypes';
-import { COLOR_SCHEMES, foreground } from '../../util';
+import { foreground } from '../../util';
 import { buildTypeTree } from './nodeTypes';
 
 export interface NodeStylingState {

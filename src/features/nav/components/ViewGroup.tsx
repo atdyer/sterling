@@ -49,6 +49,14 @@ const ViewGroup: React.FunctionComponent<ViewNavigationProps> = props => {
                 onClick={() => props.setMainView('table')}
             />
             <Button
+                active={props.view === 'script'}
+                className={Classes.MINIMAL}
+                icon={'code'}
+                large={true}
+                text={'Script'}
+                onClick={() => props.setMainView('script')}
+            />
+            <Button
                 active={props.view === 'source'}
                 className={Classes.MINIMAL}
                 icon={'document'}

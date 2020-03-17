@@ -77,7 +77,7 @@ const TableDrawer: React.FunctionComponent<TableDrawerProps> = props => {
             <SterlingDrawer.Section
                 collapsed={props.collapseTables}
                 onToggle={props.toggleCollapseTables}
-                style={{ zIndex: 1 }}
+                style={{ position: 'relative', zIndex: 1 }}
                 title={'Tables'}>
                 <RadioGroup
                     onChange={event => props.setTableTypes(parseInt(event.currentTarget.value))}
@@ -99,6 +99,7 @@ const TableDrawer: React.FunctionComponent<TableDrawerProps> = props => {
             <SterlingDrawer.Section
                 collapsed={props.collapseData}
                 onToggle={props.toggleCollapseData}
+                style={{ position: 'relative', zIndex: 0 }}
                 title={'Data Options'}>
                 <Switch
                     alignIndicator={Alignment.LEFT}
@@ -126,6 +127,7 @@ const TableDrawer: React.FunctionComponent<TableDrawerProps> = props => {
             <SterlingDrawer.Section
                 collapsed={props.collapseLayout}
                 onToggle={props.toggleCollapseLayout}
+                style={{ position: 'relative', zIndex: 0 }}
                 title={'Layout Options'}>
                 <FormGroup inline={true} label='Layout Direction'>
                     <ButtonGroup>

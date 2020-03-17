@@ -9,6 +9,8 @@ import GraphDrawer from '../features/graph/GraphDrawer';
 import GraphStage from '../features/graph/GraphStage';
 import StaticNavbar from '../features/nav/StaticNavbar';
 import SterlingNavbar from '../features/nav/SterlingNavbar';
+import ScriptDrawer from '../features/script/ScriptDrawer';
+import ScriptStage from '../features/script/ScriptStage';
 import SourceDrawer from '../features/source/SourceDrawer';
 import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
@@ -80,6 +82,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         const drawerOpen =
             (props.mainView === 'graph' && props.graphView !== null) ||
             (props.mainView === 'table' && props.tableView !== null) ||
+            (props.mainView === 'script' && props.scriptView !== null) ||
             (props.mainView === 'source' && props.sourceView !== null);
 
         return (
@@ -118,6 +121,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
         const evalActive =
             (props.mainView === 'graph' && props.graphView === 'evaluator') ||
             (props.mainView === 'table' && props.tableView === 'evaluator') ||
+            (props.mainView === 'script' && props.scriptView === 'evaluator') ||
             (props.mainView === 'source' && props.sourceView === 'evaluator');
 
         return <SterlingDrawer>
@@ -128,6 +132,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                     :
                         props.mainView === 'graph' ? <GraphDrawer/> :
                         props.mainView === 'table' ? <TableDrawer/> :
+                        props.mainView === 'script' ? <ScriptDrawer/> :
                         props.mainView === 'source' ? <SourceDrawer/> :
                         null
 
@@ -160,6 +165,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                 {
                     view === 'table' ? <TableStage/> :
                     view === 'graph' ? <GraphStage/> :
+                    view === 'script' ? <ScriptStage/> :
                     view === 'source' ? <SourceStage/> : null
                 }
             </SterlingStage>

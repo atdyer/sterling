@@ -12,6 +12,7 @@ import { RootState } from '../rootReducer';
 import {
     setGraphView,
     setMainView,
+    setScriptView,
     setSourceView,
     setTableView
 } from './sterlingSlice';
@@ -25,6 +26,7 @@ const mapState = (state: RootState) => ({
 const mapDispatch = {
     setGraphView,
     setMainView,
+    setScriptView,
     setSourceView,
     setTableView
 };
@@ -69,6 +71,7 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
     const evalActive =
         (mainview === 'graph' && props.graphView === 'evaluator') ||
         (mainview === 'table' && props.tableView === 'evaluator') ||
+        (mainview === 'script' && props.scriptView === 'evaluator') ||
         (mainview === 'source' && props.sourceView === 'evaluator');
 
     return (
@@ -76,6 +79,7 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
             {
                 mainview === 'graph' ? <GraphSidebar {...props}/> :
                 mainview === 'table' ? <TableSidebar {...props}/> :
+                mainview === 'script' ? <ScriptSidebar {...props}/> :
                 mainview === 'source' ? <SourceSidebar {...props}/> :
                 null
             }
@@ -85,6 +89,7 @@ const SterlingSidebar: React.FunctionComponent<SterlingSidebarProps> = props => 
                 click={() => {
                     if (mainview === 'graph') props.setGraphView('evaluator');
                     if (mainview === 'table') props.setTableView('evaluator');
+                    if (mainview === 'script') props.setScriptView('evaluator');
                     if (mainview === 'source') props.setSourceView('evaluator');
                 }}
                 icon={'console'}
@@ -134,6 +139,10 @@ const TableSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
             icon={'settings'}
             text={'Table Settings'}/>
     );
+};
+
+const ScriptSidebar: React.FunctionComponent = props => {
+    return null;
 };
 
 const SourceSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
