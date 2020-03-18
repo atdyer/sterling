@@ -1,0 +1,16 @@
+@import "~codemirror/lib/codemirror.css";
+@import "~codemirror/theme/material.css";
+@import "~codemirror/addon/hint/show-hint.css";
+@import "~codemirror/addon/scroll/simplescrollbars.css";
+
+.react-codemirror2 {
+  width: 100%;
+  height: 100%;
+}
+
+.CodeMirror {
+  font-family: "Fira Code", monospace;
+  width: 100%;
+  height: 100%;
+  cursor: text;
+}

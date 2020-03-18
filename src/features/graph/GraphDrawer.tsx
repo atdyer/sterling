@@ -21,10 +21,10 @@ const mapState = (state: RootState) => ({
 const connector = connect(mapState);
 
 // Create props for things from redux
-type GraphStageProps = ConnectedProps<typeof connector>;
+type GraphDrawerProps = ConnectedProps<typeof connector>;
 
 // The graph settings component
-const GraphDrawer: React.FunctionComponent<GraphStageProps> = props => {
+const GraphDrawer: React.FunctionComponent<GraphDrawerProps> = props => {
 
     if (props.view === 'node') return (
         <>

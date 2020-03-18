@@ -25,7 +25,7 @@ const initialState: SterlingState = {
     mainView: 'script',
     tableView: null,
     graphView: null,
-    scriptView: null,
+    scriptView: 'script',
     sourceView: 'files',
     welcomeDescription: 'Use Alloy to generate an instance.',
     welcomeTitle: 'Welcome to Sterling'
