@@ -5,7 +5,7 @@ import { AlloyInstance } from 'alloy-ts';
 export type MainView = 'graph' | 'table' | 'script' | 'source';
 export type TableView = 'settings' | 'evaluator' | null;
 export type GraphView = 'node' | 'edge' | 'layout' | 'settings' | 'evaluator' | null;
-export type ScriptView = 'script' | 'settings' | 'evaluator' | null;
+export type ScriptView = 'settings' | 'evaluator' | null;
 export type SourceView = 'files' | 'evaluator' | null;
 
 // Sterling state
@@ -25,7 +25,7 @@ const initialState: SterlingState = {
     mainView: 'script',
     tableView: null,
     graphView: null,
-    scriptView: 'script',
+    scriptView: 'settings',
     sourceView: 'files',
     welcomeDescription: 'Use Alloy to generate an instance.',
     welcomeTitle: 'Welcome to Sterling'

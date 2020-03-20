@@ -6,15 +6,11 @@ import SplitPane from 'react-split-pane';
 import { Evaluator } from '../evaluator/Evaluator';
 import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
-import GraphStage from '../features/graph/GraphStage';
 import StaticNavbar from '../features/nav/StaticNavbar';
 import SterlingNavbar from '../features/nav/SterlingNavbar';
 import ScriptDrawer from '../features/script/ScriptDrawer';
-import ScriptStage from '../features/script/ScriptStage';
 import SourceDrawer from '../features/source/SourceDrawer';
-import SourceStage from '../features/source/SourceStage';
 import TableDrawer from '../features/table/TableDrawer';
-import TableStage from '../features/table/TableStage';
 import { RootState } from '../rootReducer';
 import { SterlingConnection } from './SterlingConnection';
 import SterlingDrawer from './SterlingDrawer';
@@ -94,7 +90,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                         <SterlingSidebar/>
                         {
                             !drawerOpen
-                                ? this._getStage()
+                                ? <SterlingStage/>
                                 : (
                                     <SplitPane
                                         split={'vertical'}
@@ -104,7 +100,7 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                                         onChange={this._resize}
                                     >
                                         { this._getDrawer() }
-                                        { this._getStage() }
+                                        { <SterlingStage/> }
                                     </SplitPane>
                                 )
                         }
@@ -153,23 +149,6 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
                 return <SterlingNavbar connection={this.props.connection}/>;
 
         }
-
-    };
-
-    private _getStage = (): React.ReactNode => {
-
-        const view = this.props.mainView;
-
-        return (
-            <SterlingStage>
-                {
-                    view === 'table' ? <TableStage/> :
-                    view === 'graph' ? <GraphStage/> :
-                    view === 'script' ? <ScriptStage/> :
-                    view === 'source' ? <SourceStage/> : null
-                }
-            </SterlingStage>
-        )
 
     };
 

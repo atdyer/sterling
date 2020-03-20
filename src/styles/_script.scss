@@ -2,6 +2,7 @@
 @import "~codemirror/theme/material.css";
 @import "~codemirror/addon/hint/show-hint.css";
 @import "~codemirror/addon/scroll/simplescrollbars.css";
+@import "~@blueprintjs/core/lib/scss/variables";
 
 .react-codemirror2 {
   width: 100%;
@@ -13,4 +14,32 @@
   width: 100%;
   height: 100%;
   cursor: text;
+}
+
+.script-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+
+  .status-bar {
+    height: 4px;
+    min-height: 4px;
+    &.success {
+      background-color: $green3;
+    }
+    &.pending {
+      background-color: $blue3;
+    }
+    &.error {
+      background-color: $red3;
+    }
+  }
+
+}
+
+.script-stage {
+  width: 100%;
+  height: 100%;
 }
