@@ -1,4 +1,5 @@
 import { require } from 'd3-require';
+import { showErrorToast } from './components/ScriptToaster';
 
 class ScriptRunner {
 
@@ -64,6 +65,8 @@ class ScriptRunner {
                 .then(lib => {
                     this._libraries.set(pkg, lib);
                     return lib;
+                }).catch(error => {
+                    showErrorToast(`${library}: ${error.message}`)
                 });
 
     }
@@ -75,5 +78,6 @@ function packageName (library: string): string {
 }
 
 export {
+    packageName,
     ScriptRunner
 }

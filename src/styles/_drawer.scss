@@ -67,6 +67,12 @@
         margin: 0 0 4px;
       }
 
+      .bp3-fill {
+        input {
+          width: 100% !important;
+        }
+      }
+
       .bp3-label {
         flex: 1 0 auto;
       }

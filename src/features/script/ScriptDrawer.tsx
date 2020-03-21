@@ -1,16 +1,21 @@
 import {
+    Alignment,
     Button,
     ButtonGroup,
     FormGroup,
     HTMLTable,
-    Label
+    InputGroup,
+    Switch
 } from '@blueprintjs/core';
-import React from 'react';
+import React, { KeyboardEvent } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
+import { packageName } from './ScriptRunner';
 import {
+    addLibrary,
     setStage,
+    toggleAutorun,
     toggleCollapseLibraries,
     toggleCollapseSettings,
     toggleCollapseVariables
@@ -23,7 +28,9 @@ const mapState = (state: RootState) => ({
 });
 
 const mapDispatch = {
+    addLibrary,
     setStage,
+    toggleAutorun,
     toggleCollapseLibraries,
     toggleCollapseSettings,
     toggleCollapseVariables
@@ -32,6 +39,10 @@ const mapDispatch = {
 const connector = connect(mapState, mapDispatch);
 
 type ScriptDrawerProps = ConnectedProps<typeof connector>;
+
+interface IScriptDrawerState {
+    libraryInput: string
+}
 
 interface ILinkProps {
     href: string
@@ -42,7 +53,17 @@ const Link: React.FunctionComponent<ILinkProps> = props => {
     return <a href={props.href} target={'_blank'} rel={'noreferrer noopener'}>{ props.children }</a>
 };
 
-class ScriptDrawer extends React.Component<ScriptDrawerProps> {
+class ScriptDrawer extends React.Component<ScriptDrawerProps, IScriptDrawerState> {
+
+    constructor (props: ScriptDrawerProps) {
+
+        super(props);
+
+        this.state = {
+            libraryInput: ''
+        }
+
+    }
 
     render (): React.ReactNode {
 
@@ -65,23 +86,41 @@ class ScriptDrawer extends React.Component<ScriptDrawerProps> {
                             text={'SVG'}/>
                     </ButtonGroup>
                 </FormGroup>
+                <Switch
+                    alignIndicator={Alignment.RIGHT}
+                    checked={props.autorun}
+                    label={'Auto run on next instance'}
+                    onChange={props.toggleAutorun}/>
             </SterlingDrawer.Section>
             <SterlingDrawer.Section
                 collapsed={props.collapseLibraries}
                 onToggle={props.toggleCollapseLibraries}
                 title={'Libraries'}>
-                <Label>The following libraries are available in the scripting environment:</Label>
                 <HTMLTable className={'fill'} condensed={true}>
                     <thead>
                     <tr>
-                        <th scope={'col'}>Name</th>
+                        <th scope={'col'}>Variable</th>
                         <th scope={'col'}>Library</th>
                     </tr>
                     </thead>
                     <tbody>
+                    {
+                        props.libraries.toList().map(library => (
+                            <tr key={library}>
+                                <td>{packageName(library)}</td>
+                                <td><Link href={`https://www.jsdelivr.com/package/npm/${packageName(library)}`}>{library}</Link></td>
+                            </tr>
+                        ))
+                    }
                     <tr>
-                        <td>d3</td>
-                        <td><Link href={'https://d3js.org/'}>D3</Link></td>
+                        <td colSpan={2}>
+                            <InputGroup
+                                fill={true}
+                                placeholder={'Add library'}
+                                onChange={this._onChange.bind(this)}
+                                onKeyDown={this._onType.bind(this)}
+                                value={this.state.libraryInput}/>
+                        </td>
                     </tr>
                     </tbody>
                 </HTMLTable>
@@ -90,11 +129,10 @@ class ScriptDrawer extends React.Component<ScriptDrawerProps> {
                 collapsed={props.collapseVariables}
                 onToggle={props.toggleCollapseVariables}
                 title={'Variables'}>
-                <Label>The following variables are available in the scripting environment:</Label>
                 <HTMLTable className={'fill'} condensed={true}>
                     <thead>
                     <tr>
-                        <th scope={'col'}>Name</th>
+                        <th scope={'col'}>Variable</th>
                         <th scope={'col'}>Value</th>
                     </tr>
                     </thead>
@@ -113,6 +151,21 @@ class ScriptDrawer extends React.Component<ScriptDrawerProps> {
                 </HTMLTable>
             </SterlingDrawer.Section>
         </>
+    }
+
+    private _onChange (event: any): void {
+        this.setState({
+            libraryInput: event.target.value
+        })
+    }
+
+    private _onType (event: KeyboardEvent): void {
+        if (event.key === 'Enter' && this.state.libraryInput.length) {
+            this.props.addLibrary(this.state.libraryInput);
+            this.setState({
+                libraryInput: ''
+            });
+        }
     }
 
     private _canvasRow (): React.ReactNode {

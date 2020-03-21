@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { List } from 'immutable'
 
 const matrix = `const stage = d3.select(svg);
 const sigs = instance.signatures();
@@ -53,11 +54,12 @@ export enum ScriptStatus {
 }
 
 export interface ScriptState {
+    autorun: boolean
     collapseLibraries: boolean
     collapseSettings: boolean
     collapseVariables: boolean
     height: number | null
-    libraries: string[]
+    libraries: List<string>
     script: string
     stage: 'canvas' | 'svg'
     status: ScriptStatus
@@ -65,11 +67,12 @@ export interface ScriptState {
 }
 
 const initialState: ScriptState = {
+    autorun: true,
     collapseLibraries: false,
     collapseSettings: false,
     collapseVariables: false,
     height: null,
-    libraries: ['d3@5'],
+    libraries: List(['d3@5']),
     stage: 'svg',
     script: matrix,
     status: ScriptStatus.PENDING,
@@ -80,6 +83,11 @@ const scriptSlice = createSlice({
     name: 'script',
     initialState: initialState,
     reducers: {
+        addLibrary (state, action: PayloadAction<string>) {
+            if (!state.libraries.includes(action.payload)) {
+                state.libraries = state.libraries.push(action.payload);
+            }
+        },
         setSize (state, action: PayloadAction<[number|null, number|null]>) {
             state.width = action.payload[0];
             state.height = action.payload[1];
@@ -94,6 +102,9 @@ const scriptSlice = createSlice({
         setValue (state, action: PayloadAction<string>) {
             state.script = action.payload;
         },
+        toggleAutorun (state) {
+            state.autorun = !state.autorun;
+        },
         toggleCollapseLibraries (state) {
             state.collapseLibraries = !state.collapseLibraries;
         },
@@ -107,10 +118,12 @@ const scriptSlice = createSlice({
 });
 
 export const {
+    addLibrary,
     setSize,
     setStage,
     setStatus,
     setValue,
+    toggleAutorun,
     toggleCollapseLibraries,
     toggleCollapseSettings,
     toggleCollapseVariables

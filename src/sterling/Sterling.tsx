@@ -170,7 +170,8 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
 
     private _resize = (): void => {
 
-        this.props.graph.resize();
+        if (this.props.mainView === 'graph')
+            this.props.graph.resize();
 
     }
 

@@ -59,7 +59,8 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
                         prevState: Readonly<ScriptStageState>): void {
 
         if (prevProps.instance !== this.props.instance &&
-            this.props.status === ScriptStatus.SUCCESS) {
+            this.props.status === ScriptStatus.SUCCESS &&
+            this.props.autorun) {
             this._onRequestExecute();
         }
 
@@ -125,7 +126,7 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
 
         this._runner
             .script(script)
-            .libraries(libraries)
+            .libraries(libraries.toArray())
             .args('instance', s, 'width', 'height')
             .run(instance, stage, width, height)
             .then(() => {

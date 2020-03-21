@@ -82,7 +82,7 @@ class ScriptEditor extends React.Component<ScriptEditorProps> {
         )
     }
 
-    _onResize = (entries: IResizeEntry[]) => {
+    private _onResize = (entries: IResizeEntry[]) => {
         if (this._editor) {
             this._editor.setSize(entries[0].contentRect.width, '100%');
         }
