@@ -8,13 +8,30 @@
 .react-codemirror2 {
   width: 100%;
   height: 100%;
+  position: relative;
+  top: 0;
 }
 
-.CodeMirror {
-  font-family: "Fira Code", monospace;
+.cm-container {
+
+  position: relative;
   width: 100%;
   height: 100%;
-  cursor: text;
+
+  .CodeMirror {
+    font-family: "Fira Code", monospace;
+    cursor: text;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .CodeMirror-scrollbar-filler {
+    background-color: #263238;
+  }
+
 }
 
 .script-editor {
@@ -26,7 +43,6 @@
 
   .status-bar {
     height: 4px;
-    min-height: 4px;
     &.success {
       background-color: $green3;
     }
@@ -36,6 +52,35 @@
     &.error {
       background-color: $red3;
     }
+  }
+
+  .script-nav {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #394b59;
+
+    .bp3-button {
+      border-radius: 0;
+    }
+
+    .bp3-switch {
+      margin: 0 4px 0 0;
+    }
+
+    .file-menu {
+      flex: 1 0 auto;
+      .bp3-popover-wrapper {
+        flex: 0 1 auto;
+      }
+    }
+
+    .script-nav-right {
+      display: flex;
+      align-items: center;
+    }
+
   }
 
 }

@@ -50,44 +50,46 @@ class ScriptEditor extends React.Component<ScriptEditorProps> {
 
     render (): React.ReactNode {
         return (
-            <ResizeSensor onResize={this._onResize}>
-                <CodeMirror
-                    onBeforeChange={(editor, data, value) => {
-                        this.props.setValue(value);
-                    }}
-                    onChange={this.props.onChange}
-                    editorDidMount={editor => {
-                        this._editor = editor;
-                    }}
-                    value={this.props.script}
-                    options={{
-                        readOnly: this.props.readOnly,
-                        mode: 'javascript',
-                        theme: 'material',
-                        lineNumbers: true,
-                        tabSize: 2,
-                        autoCloseBrackets: true,
-                        matchBrackets: true,
-                        extraKeys: {
-                            'Ctrl-Space': 'autocomplete',
-                            'Ctrl-Enter': this.props.onRequestExecute,
-                            'Ctrl-/': 'toggleComment',
-                            'Tab': function (cm: codemirror.Editor) {
-                                let unit = cm.getOption('indentUnit') || 0;
-                                let spaces = Array(unit + 1).join(' ');
-                                cm.replaceSelection(spaces);
-                            }
-                        },
-                        gutters: [
-                            'CodeMirror-linenumbers',
-                            'CodeMirror-foldgutter'
-                        ],
-                        placeholder: 'Type code here...',
-                        scrollbarStyle: 'overlay',
-                        foldGutter: true
-                    }}
-                />
-            </ResizeSensor>
+            <div className={'cm-container'}>
+                <ResizeSensor onResize={this._onResize}>
+                    <CodeMirror
+                        onBeforeChange={(editor, data, value) => {
+                            this.props.setValue(value);
+                        }}
+                        onChange={this.props.onChange}
+                        editorDidMount={editor => {
+                            this._editor = editor;
+                        }}
+                        value={this.props.script}
+                        options={{
+                            readOnly: this.props.readOnly,
+                            mode: 'javascript',
+                            theme: 'material',
+                            lineNumbers: true,
+                            tabSize: 2,
+                            autoCloseBrackets: true,
+                            matchBrackets: true,
+                            extraKeys: {
+                                'Ctrl-Space': 'autocomplete',
+                                'Ctrl-Enter': this.props.onRequestExecute,
+                                'Ctrl-/': 'toggleComment',
+                                'Tab': function (cm: codemirror.Editor) {
+                                    let unit = cm.getOption('indentUnit') || 0;
+                                    let spaces = Array(unit + 1).join(' ');
+                                    cm.replaceSelection(spaces);
+                                }
+                            },
+                            gutters: [
+                                'CodeMirror-linenumbers',
+                                'CodeMirror-foldgutter'
+                            ],
+                            placeholder: 'Type code here...',
+                            scrollbarStyle: 'overlay',
+                            foldGutter: true
+                        }}
+                    />
+                </ResizeSensor>
+            </div>
         )
     }
 

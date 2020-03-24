@@ -8,6 +8,7 @@ import EvaluatorView, { IEvaluatorProps } from '../evaluator/EvaluatorView';
 import GraphDrawer from '../features/graph/GraphDrawer';
 import StaticNavbar from '../features/nav/StaticNavbar';
 import SterlingNavbar from '../features/nav/SterlingNavbar';
+import { showErrorToast } from '../features/script/components/ScriptToaster';
 import ScriptDrawer from '../features/script/ScriptDrawer';
 import SourceDrawer from '../features/source/SourceDrawer';
 import TableDrawer from '../features/table/TableDrawer';
@@ -17,7 +18,9 @@ import SterlingDrawer from './SterlingDrawer';
 import SterlingKeyboard from './SterlingKeyboard';
 import SterlingSidebar from './SterlingSidebar';
 import { setInstance } from './sterlingSlice';
+import { setScript } from '../features/script/scriptSlice';
 import SterlingStage from './SterlingStage';
+import localForage from 'localforage';
 
 
 FocusStyleManager.onlyShowFocusOnTabs();
@@ -30,7 +33,8 @@ const mapState = (state: RootState) => ({
 
 // Actions
 const mapDispatch = {
-    setInstance
+    setInstance,
+    setScript
 };
 
 // Connector
@@ -69,6 +73,13 @@ class Sterling extends React.Component<SterlingProps, ISterlingState> {
     componentDidMount (): void {
 
         this._initializeConnection();
+        localForage.getItem('script')
+            .then(script => {
+                this.props.setScript(`${script}`);
+            })
+            .catch((error: Error) => {
+                showErrorToast(`${error.name}: ${error.message}`);
+            });
 
     }
 

@@ -6,8 +6,10 @@ import { RootState } from '../../rootReducer';
 import ScriptEditor from './components/ScriptEditor';
 import { showErrorToast } from './components/ScriptToaster';
 import StatusBar from './components/StatusBar';
+import ScriptNav from './ScriptNav';
 import { ScriptRunner } from './ScriptRunner';
 import { ScriptStatus, setSize, setStatus } from './scriptSlice';
+import localForage from 'localforage';
 
 const mapState = (state: RootState) => ({
     instance: state.sterlingSlice.instance,
@@ -71,8 +73,9 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
             <ResizeSensor onResize={this._onResize}>
                 <SplitPane
                     split={'vertical'}
-                    defaultSize={'50%'}>
+                    defaultSize={'35%'}>
                     <div className={'script-editor'}>
+                        <ScriptNav onRequestExecute={this._onRequestExecute}/>
                         <StatusBar status={this.props.status}/>
                         <ScriptEditor
                             onChange={() => {
@@ -126,18 +129,38 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
 
         try {
 
-            this._runner
-                .script(script)
-                .libraries(libraries.toArray())
-                .args('instance', s, 'width', 'height')
-                .run(instance, stage, width, height)
+            // If the script has changed, save it to local storage
+            // before moving on to execute
+            (new Promise(((resolve, reject) => {
+                if (this.props.status === ScriptStatus.SUCCESS) {
+                    resolve();
+                }
+                localForage.setItem('script', this.props.script)
+                    .then(resolve)
+                    .catch(reject);
+            })))
+
+                // Now execute the script
+                .then(() =>
+                    this._runner
+                        .script(script)
+                        .libraries(libraries.toArray())
+                        .args('instance', s, 'width', 'height')
+                        .run(instance, stage, width, height)
+                )
+
+                // Set the status to success if everything went okay
                 .then(() => {
                     this.props.setStatus(ScriptStatus.SUCCESS);
                 })
+
+                // Set the status to error and show a message if something went wrong
                 .catch(error => {
                     this.props.setStatus(ScriptStatus.ERROR);
                     showErrorToast(error.message)
                 })
+
+                // Enable the editor
                 .finally(this._enableEditor);
 
         } catch (error) {

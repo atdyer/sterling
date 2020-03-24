@@ -1,5 +1,6 @@
 import { require } from 'd3-require';
 import { showErrorToast } from './components/ScriptToaster';
+import localForage from 'localforage';
 
 class ScriptRunner {
 
@@ -40,10 +41,13 @@ class ScriptRunner {
             this._script
         );
 
-        return Promise
-            .all(this._libs.map(this._fetchLibrary.bind(this)))
-            .then(libs => {
-                fn(...args, ...libs);
+        return localForage.setItem('script', this._script)
+            .then(() => {
+                return Promise
+                    .all(this._libs.map(this._fetchLibrary.bind(this)))
+                    .then(libs => {
+                        fn(...args, ...libs);
+                    });
             });
 
     }

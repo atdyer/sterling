@@ -1,62 +1,65 @@
 import {
-    Alignment,
     Button,
     ButtonGroup,
-    FormGroup,
-    Switch
+    Menu,
+    MenuItem,
+    Popover,
+    Position
 } from '@blueprintjs/core';
+import { saveAs } from 'file-saver';
 import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
-import { RootState } from '../../../rootReducer';
-import SterlingDrawer from '../../../sterling/SterlingDrawer';
-import { saveAs } from 'file-saver';
-import { showErrorToast } from '../components/ScriptToaster';
-import {
-    setScript,
-    setStage,
-    toggleAutorun,
-    toggleCollapseSettings
-} from '../scriptSlice';
+import { RootState } from '../../rootReducer';
+import { showErrorToast } from './components/ScriptToaster';
+import { setScript, setStage, } from './scriptSlice';
 
 const mapState = (state: RootState) => ({
-    autorun: state.scriptSlice.autorun,
-    collapseSettings: state.scriptSlice.collapseSettings,
     script: state.scriptSlice.script,
     stage: state.scriptSlice.stage
 });
 
 const mapDispatch = {
     setScript,
-    setStage,
-    toggleAutorun,
-    toggleCollapseSettings
+    setStage
 };
 
 const connector = connect(mapState, mapDispatch);
 
-type ScriptSettingsProps = ConnectedProps<typeof connector>;
+type ScriptNavProps = ConnectedProps<typeof connector> & {
+    onRequestExecute: () => void
+};
 
-class ScriptSettings extends React.Component<ScriptSettingsProps> {
+class ScriptNav extends React.Component<ScriptNavProps> {
 
-    private _fileinput: React.RefObject<HTMLInputElement>;
+    private readonly _fileinput: React.RefObject<HTMLInputElement>;
 
-    constructor (props: ScriptSettingsProps) {
+    constructor (props: ScriptNavProps) {
+
         super(props);
         this._fileinput = React.createRef();
+
     }
 
     render (): React.ReactNode {
+
         return (
-            <SterlingDrawer.Section
-                collapsed={this.props.collapseSettings}
-                onToggle={this.props.toggleCollapseSettings}
-                title={'Script Settings'}>
-                <Switch
-                    alignIndicator={Alignment.RIGHT}
-                    checked={this.props.autorun}
-                    label={'Auto run on next instance'}
-                    onChange={this.props.toggleAutorun}/>
-                <FormGroup inline={true} label={'Stage type'}>
+            <div className={'script-nav bp3-dark'}>
+                <input
+                    type={'file'}
+                    style={{display: 'none'}}
+                    onChange={this._onFileChange}
+                    ref={this._fileinput}/>
+                <ButtonGroup className={'file-menu'} minimal={true}>
+                    <Popover position={Position.BOTTOM_LEFT}>
+                        <Button icon={'document'} rightIcon={'caret-down'}>File</Button>
+                        <Menu>
+                            <MenuItem text={'Open...'} icon={'document-open'} onClick={this._onClickOpen}/>
+                            <MenuItem text={'Save As...'} icon={'floppy-disk'} onClick={this._onClickSave}/>
+                        </Menu>
+                    </Popover>
+                    <Button icon={'social-media'} onClick={this.props.onRequestExecute}>Execute</Button>
+                </ButtonGroup>
+                <div className={'script-nav-right'}>
                     <ButtonGroup minimal={true}>
                         <Button
                             active={this.props.stage === 'canvas'}
@@ -67,20 +70,10 @@ class ScriptSettings extends React.Component<ScriptSettingsProps> {
                             onClick={() => this.props.setStage('svg')}
                             text={'SVG'}/>
                     </ButtonGroup>
-                </FormGroup>
-                <FormGroup inline={true} label={'File'}>
-                    <ButtonGroup minimal={true}>
-                        <Button text={'Open...'} onClick={this._onClickOpen}/>
-                        <Button text={'Save As...'} onClick={this._onClickSave}/>
-                        <input
-                            type={'file'}
-                            style={{display: 'none'}}
-                            onChange={this._onFileChange}
-                            ref={this._fileinput}/>
-                    </ButtonGroup>
-                </FormGroup>
-            </SterlingDrawer.Section>
+                </div>
+            </div>
         );
+
     }
 
     private _onClickOpen = () => {
@@ -115,4 +108,4 @@ class ScriptSettings extends React.Component<ScriptSettingsProps> {
 
 }
 
-export default connector(ScriptSettings);
+export default connector(ScriptNav);
