@@ -124,19 +124,28 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
         let width = this.props.width;
         let height = this.props.height;
 
-        this._runner
-            .script(script)
-            .libraries(libraries.toArray())
-            .args('instance', s, 'width', 'height')
-            .run(instance, stage, width, height)
-            .then(() => {
-                this.props.setStatus(ScriptStatus.SUCCESS);
-            })
-            .catch(error => {
-                this.props.setStatus(ScriptStatus.ERROR);
-                showErrorToast(error.message)
-            })
-            .finally(this._enableEditor);
+        try {
+
+            this._runner
+                .script(script)
+                .libraries(libraries.toArray())
+                .args('instance', s, 'width', 'height')
+                .run(instance, stage, width, height)
+                .then(() => {
+                    this.props.setStatus(ScriptStatus.SUCCESS);
+                })
+                .catch(error => {
+                    this.props.setStatus(ScriptStatus.ERROR);
+                    showErrorToast(error.message)
+                })
+                .finally(this._enableEditor);
+
+        } catch (error) {
+
+            showErrorToast(error.message);
+            this._enableEditor();
+
+        }
 
     };
 

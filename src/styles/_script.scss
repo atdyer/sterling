@@ -2,6 +2,7 @@
 @import "~codemirror/theme/material.css";
 @import "~codemirror/addon/hint/show-hint.css";
 @import "~codemirror/addon/scroll/simplescrollbars.css";
+@import "~codemirror/addon/fold/foldgutter.css";
 @import "~@blueprintjs/core/lib/scss/variables";
 
 .react-codemirror2 {
@@ -19,7 +20,7 @@
 .script-editor {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   width: 100%;
   height: 100%;
 

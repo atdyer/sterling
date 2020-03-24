@@ -11,6 +11,10 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/javascript-hint';
 import 'codemirror/addon/display/placeholder';
 import 'codemirror/addon/scroll/simplescrollbars';
+import 'codemirror/addon/fold/foldcode';
+import 'codemirror/addon/fold/foldgutter';
+import 'codemirror/addon/fold/brace-fold';
+import 'codemirror/addon/fold/comment-fold';
 import * as codemirror from 'codemirror';
 import { Controlled as CodeMirror } from 'react-codemirror2';
 import { setValue } from '../scriptSlice';
@@ -74,8 +78,13 @@ class ScriptEditor extends React.Component<ScriptEditorProps> {
                                 cm.replaceSelection(spaces);
                             }
                         },
+                        gutters: [
+                            'CodeMirror-linenumbers',
+                            'CodeMirror-foldgutter'
+                        ],
                         placeholder: 'Type code here...',
-                        scrollbarStyle: 'overlay'
+                        scrollbarStyle: 'overlay',
+                        foldGutter: true
                     }}
                 />
             </ResizeSensor>

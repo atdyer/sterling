@@ -88,6 +88,9 @@ const scriptSlice = createSlice({
                 state.libraries = state.libraries.push(action.payload);
             }
         },
+        setScript (state, action: PayloadAction<string>) {
+            state.script = action.payload;
+        },
         setSize (state, action: PayloadAction<[number|null, number|null]>) {
             state.width = action.payload[0];
             state.height = action.payload[1];
@@ -119,6 +122,7 @@ const scriptSlice = createSlice({
 
 export const {
     addLibrary,
+    setScript,
     setSize,
     setStage,
     setStatus,

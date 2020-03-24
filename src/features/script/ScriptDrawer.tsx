@@ -1,16 +1,9 @@
-import {
-    Alignment,
-    Button,
-    ButtonGroup,
-    FormGroup,
-    HTMLTable,
-    InputGroup,
-    Switch
-} from '@blueprintjs/core';
+import { HTMLTable, InputGroup } from '@blueprintjs/core';
 import React, { KeyboardEvent } from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import { RootState } from '../../rootReducer';
 import SterlingDrawer from '../../sterling/SterlingDrawer';
+import ScriptSettings from './drawer-sections/ScriptSettings';
 import { packageName } from './ScriptRunner';
 import {
     addLibrary,
@@ -55,9 +48,13 @@ const Link: React.FunctionComponent<ILinkProps> = props => {
 
 class ScriptDrawer extends React.Component<ScriptDrawerProps, IScriptDrawerState> {
 
+    private _fileinput: React.RefObject<HTMLInputElement>;
+
     constructor (props: ScriptDrawerProps) {
 
         super(props);
+
+        this._fileinput = React.createRef();
 
         this.state = {
             libraryInput: ''
@@ -70,28 +67,7 @@ class ScriptDrawer extends React.Component<ScriptDrawerProps, IScriptDrawerState
         const props = this.props;
 
         return <>
-            <SterlingDrawer.Section
-                collapsed={props.collapseSettings}
-                onToggle={props.toggleCollapseSettings}
-                title={'Script Settings'}>
-                <FormGroup inline={true} label={'Stage type'}>
-                    <ButtonGroup>
-                        <Button
-                            active={props.stage === 'canvas'}
-                            onClick={() => props.setStage('canvas')}
-                            text={'Canvas'}/>
-                        <Button
-                            active={props.stage === 'svg'}
-                            onClick={() => props.setStage('svg')}
-                            text={'SVG'}/>
-                    </ButtonGroup>
-                </FormGroup>
-                <Switch
-                    alignIndicator={Alignment.RIGHT}
-                    checked={props.autorun}
-                    label={'Auto run on next instance'}
-                    onChange={props.toggleAutorun}/>
-            </SterlingDrawer.Section>
+            <ScriptSettings/>
             <SterlingDrawer.Section
                 collapsed={props.collapseLibraries}
                 onToggle={props.toggleCollapseLibraries}
@@ -194,6 +170,12 @@ class ScriptDrawer extends React.Component<ScriptDrawerProps, IScriptDrawerState
             </td>
         </tr>;
 
+    }
+
+    private _openFile (): void {
+        if (this._fileinput.current) {
+            this._fileinput.current.click();
+        }
     }
 
     private _stageRow (): React.ReactNode {
