@@ -50,7 +50,10 @@ const scriptSlice = createSlice({
             state.height = action.payload[1];
         },
         setStage (state, action: PayloadAction<'canvas'|'svg'>) {
-            state.stage = action.payload;
+            if (action.payload !== state.stage) {
+                state.stage = action.payload;
+                state.status = ScriptStatus.PENDING;
+            }
         },
         setStatus (state, action: PayloadAction<ScriptStatus>) {
             if (state.status !== action.payload)
