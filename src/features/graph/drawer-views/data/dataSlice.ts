@@ -126,9 +126,9 @@ const dataSlice = createSlice({
 
                     // Extract atoms
                     state.atoms = Map(signatures.map(sig => [
-                            sig.id(),
-                            sig.atoms(true).map(atom => atom.name())
-                        ]));
+                        sig.id(),
+                        sig.atoms(true).map(atom => atom.name())
+                    ]));
 
 
                 } else {

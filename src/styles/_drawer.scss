@@ -71,6 +71,17 @@
         }
       }
 
+      .bp3-html-table-condensed {
+        td {
+          padding-top: 2px;
+          padding-bottom: 2px;
+        }
+        th {
+          padding-top: 4px;
+          padding-bottom: 4px;
+        }
+      }
+
       .bp3-label {
         flex: 1 0 auto;
       }

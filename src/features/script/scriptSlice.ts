@@ -1,5 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { List } from 'immutable'
+import { AlloyInstance } from 'alloy-ts';
+import { AlloyInstance as ProxyInstance } from './alloy-proxy/AlloyInstance';
+import { List, Map } from 'immutable'
+import { setInstance } from '../../sterling/sterlingSlice';
 
 export enum ScriptStatus {
     SUCCESS = 'success',
@@ -8,28 +11,38 @@ export enum ScriptStatus {
 }
 
 export interface ScriptState {
+    atoms: Map<string, string[]>
     autorun: boolean
+    collapseInstanceVariables: boolean
     collapseLibraries: boolean
-    collapseSettings: boolean
-    collapseVariables: boolean
+    collapseStageVariables: boolean
     height: number | null
+    instance: ProxyInstance | null
     libraries: List<string>
+    overlay: boolean
+    projections: Map<string, string>
     script: string
     stage: 'canvas' | 'svg'
     status: ScriptStatus
+    unprojected: List<string>
     width: number | null
 }
 
 const initialState: ScriptState = {
+    atoms: Map(),
     autorun: true,
+    collapseInstanceVariables: false,
     collapseLibraries: false,
-    collapseSettings: false,
-    collapseVariables: false,
+    collapseStageVariables: false,
     height: null,
+    instance: null,
     libraries: List(['d3']),
+    overlay: true,
+    projections: Map(),
     stage: 'svg',
     script: '',
     status: ScriptStatus.PENDING,
+    unprojected: List(),
     width: null
 };
 
@@ -40,6 +53,58 @@ const scriptSlice = createSlice({
         addLibrary (state, action: PayloadAction<string>) {
             if (!state.libraries.includes(action.payload)) {
                 state.libraries = state.libraries.push(action.payload);
+            }
+        },
+        addProjection (state, action: PayloadAction<string>) {
+            const sig = action.payload;
+            const atoms = state.atoms.get(sig);
+            if (atoms && atoms.length) {
+                const atom = atoms[0];
+                state.projections = state.projections.set(sig, atom);
+                const index = state.unprojected.indexOf(sig);
+                if (index !== -1)
+                    state.unprojected = state.unprojected.delete(index);
+            }
+        },
+        nextAtom (state, action: PayloadAction<string>) {
+            const sig = action.payload;
+            const cur = state.projections.get(sig);
+            const atm = state.atoms.get(sig);
+            if (cur && atm) {
+                const idx = atm.indexOf(cur);
+                const nxt = idx + 1;
+                if (idx !== -1 && nxt < atm.length) {
+                    state.projections = state.projections.set(sig, atm[nxt]);
+                }
+            }
+        },
+        previousAtom (state, action: PayloadAction<string>) {
+            const sig = action.payload;
+            const cur = state.projections.get(sig);
+            const atm = state.atoms.get(sig);
+            if (cur && atm) {
+                const idx = atm.indexOf(cur);
+                const nxt = idx - 1;
+                if (idx !== -1 && nxt >= 0) {
+                    state.projections = state.projections.set(sig, atm[nxt]);
+                }
+            }
+        },
+        removeLibrary (state, action: PayloadAction<string>) {
+            const index = state.libraries.indexOf(action.payload);
+            if (index > -1) {
+                state.libraries = state.libraries.delete(index);
+            }
+        },
+        removeProjection (state, action: PayloadAction<string>) {
+            const sig = action.payload;
+            state.projections = state.projections.delete(sig);
+            state.unprojected = state.unprojected.push(sig).sort(alphabetical);
+        },
+        setProjection (state, action: PayloadAction<{sig: string, atom: string}>) {
+            const { sig, atom } = action.payload;
+            if (state.projections.has(sig) && state.projections.get(sig) !== atom) {
+                state.projections = state.projections.set(sig, atom);
             }
         },
         setScript (state, action: PayloadAction<string>) {
@@ -65,75 +130,86 @@ const scriptSlice = createSlice({
         toggleAutorun (state) {
             state.autorun = !state.autorun;
         },
+        toggleCollapseInstanceVariables (state) {
+            state.collapseInstanceVariables = !state.collapseInstanceVariables;
+        },
         toggleCollapseLibraries (state) {
             state.collapseLibraries = !state.collapseLibraries;
         },
-        toggleCollapseSettings (state) {
-            state.collapseSettings = !state.collapseSettings;
-        },
-        toggleCollapseVariables (state) {
-            state.collapseVariables = !state.collapseVariables;
+        toggleCollapseStageVariables (state) {
+            state.collapseStageVariables = !state.collapseStageVariables;
         }
+    },
+    extraReducers: builder => {
+        builder.addCase(setInstance, (state, action: PayloadAction<AlloyInstance | null>) => {
+
+            const xml = action.payload ? action.payload.xml() : null;
+            if (xml) {
+
+                const instance = new ProxyInstance(xml.source());
+                const univ = instance.univ();
+                const signatures = univ ? univ.subSignatures() : [];
+
+                state.instance = instance;
+
+                // Keep any existing projections
+                state.projections = Map<string, string>().withMutations(map => {
+                    signatures.forEach(sig => {
+                        const currentAtom = state.projections.get(sig.id());
+                        if (currentAtom && sig.atoms(true).find(atom => atom.id() === currentAtom)) {
+                            map.set(sig.id(), currentAtom);
+                        }
+                    });
+                });
+
+                // Create the list of unprojected signatures
+                state.unprojected = List<string>().withMutations(list => {
+                    signatures.forEach(sig => {
+                        const id = sig.id();
+                        const count = sig.atoms(true).length;
+                        if (count && !state.projections.has(id))
+                            list.push(id);
+                    });
+                });
+
+                // Extract atoms
+                state.atoms = Map(signatures.map(sig => [
+                    sig.id(),
+                    sig.atoms(true).map(atom => atom.id())
+                ]));
+
+
+            } else {
+                state.atoms = Map();
+                state.instance = null;
+                state.projections = Map();
+                state.unprojected = List();
+            }
+
+        });
     }
 });
 
+function alphabetical (a: string, b: string): number {
+    return a.localeCompare(b);
+}
+
 export const {
     addLibrary,
+    addProjection,
+    removeLibrary,
+    nextAtom,
+    previousAtom,
+    removeProjection,
+    setProjection,
     setScript,
     setSize,
     setStage,
     setStatus,
     setValue,
-    toggleAutorun,
+    toggleCollapseInstanceVariables,
     toggleCollapseLibraries,
-    toggleCollapseSettings,
-    toggleCollapseVariables
+    toggleCollapseStageVariables
 } = scriptSlice.actions;
 export default scriptSlice.reducer;
 
-//
-// const matrix = `const stage = d3.select(svg);
-// const sigs = instance.signatures();
-// const flds = instance.fields();
-//
-// const rowsfld = flds.find(fld => fld.name() === 'rows');
-// const colsfld = flds.find(fld => fld.name() === 'cols');
-// const valsfld = flds.find(fld => fld.name() === 'vals');
-//
-// const rows = parseInt(rowsfld.tuples()[0].atoms()[1].name());
-// const cols = parseInt(colsfld.tuples()[0].atoms()[1].name());
-// const w = 100;
-// const h = 100;
-//
-// function isZero (val) {
-//   return val.slice(0, 4) === 'Zero';
-// }
-//
-// const vals = valsfld.tuples().map(tup => {
-//   return {
-//     row: parseInt(tup.atoms()[1].name()),
-//     col: parseInt(tup.atoms()[2].name()),
-//     zero: isZero(tup.atoms()[3].name()),
-//     val: tup.atoms()[3].name()
-//   }
-// });
-//
-// const cells = stage
-//   .selectAll('rect')
-//   .data(vals)
-//   .join('rect')
-//   .attr('fill', d => d.zero ? 'white' : 'steelblue')
-//   .attr('stroke', 'black')
-//   .attr('width', w)
-//   .attr('height', h)
-//   .attr('x', d => width/2 + d.col * w - cols * w/2)
-//   .attr('y', d => height/2 + d.row * h - rows * h/2);
-//
-// const text = stage
-//   .selectAll('text')
-//   .data(vals)
-//   .join('text')
-//   .attr('x', d => width/2 + d.col * w - cols * w/2 + w/2)
-//   .attr('y', d => height/2 + d.row * h - rows * h/2 + h/2)
-//   .style('text-anchor', 'middle')
-//   .text(v => v.val);`;

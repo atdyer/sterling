@@ -3,13 +3,16 @@ import React from 'react';
 import { connect, ConnectedProps } from 'react-redux';
 import SplitPane from 'react-split-pane';
 import { RootState } from '../../rootReducer';
+import { AlloyAtom } from './alloy-proxy/AlloyAtom';
 import ScriptEditor from './components/ScriptEditor';
+import ScriptOverlay from './components/ScriptOverlay';
 import { showErrorToast } from './components/ScriptToaster';
 import StatusBar from './components/StatusBar';
 import ScriptNav from './ScriptNav';
 import { ScriptRunner } from './ScriptRunner';
 import { ScriptStatus, setSize, setStatus } from './scriptSlice';
 import localForage from 'localforage';
+import { AlloyInstance } from './alloy-proxy/AlloyInstance'
 
 const mapState = (state: RootState) => ({
     instance: state.sterlingSlice.instance,
@@ -60,7 +63,11 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
     componentDidUpdate (prevProps: Readonly<ScriptStageProps>,
                         prevState: Readonly<ScriptStageState>): void {
 
-        if (prevProps.instance !== this.props.instance &&
+        const isNewInstance = prevProps.instance !== this.props.instance;
+        const isNewProjection = prevProps.projections !== this.props.projections;
+        const needsRerun = isNewInstance || isNewProjection;
+
+        if (needsRerun &&
             this.props.status === ScriptStatus.SUCCESS &&
             this.props.autorun) {
             this._onRequestExecute();
@@ -85,15 +92,20 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
                             onResize={this._onResize}
                             readOnly={this.state.isReadOnly}/>
                     </div>
-                    {
-                        this.props.stage === 'canvas'
-                            ? <canvas
-                                className={'script-stage'}
-                                ref={this._canvas}/>
-                            : <svg
-                                className={'script-stage'}
-                                ref={this._svg}/>
-                    }
+                    <div className={'script-stage'}>
+                        {
+                            this.props.stage === 'canvas'
+                                ? <canvas
+                                    className={'script-stage'}
+                                    ref={this._canvas}/>
+                                : <svg
+                                    className={'script-stage'}
+                                    ref={this._svg}/>
+                        }
+                        {
+                            this.props.overlay && <ScriptOverlay/>
+                        }
+                    </div>
                 </SplitPane>
             </ResizeSensor>
         );
@@ -119,6 +131,7 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
 
         const script = this.props.script;
         const instance = this.props.instance;
+        const projections = new Map(this.props.projections.toKeyedSeq());
         const stage = s === 'canvas'
             ? this._canvas.current
             : this._svg.current;
@@ -127,46 +140,55 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
         let width = this.props.width;
         let height = this.props.height;
 
-        try {
+        if (instance) {
 
-            // If the script has changed, save it to local storage
-            // before moving on to execute
-            (new Promise(((resolve, reject) => {
-                if (this.props.status === ScriptStatus.SUCCESS) {
-                    resolve();
-                }
-                localForage.setItem('script', this.props.script)
-                    .then(resolve)
-                    .catch(reject);
-            })))
+            try {
 
-                // Now execute the script
-                .then(() =>
-                    this._runner
-                        .script(script)
-                        .libraries(libraries.toArray())
-                        .args('instance', s, 'width', 'height')
-                        .run(instance, stage, width, height)
-                )
+                // If the script has changed, save it to local storage
+                // before moving on to execute
+                (new Promise(((resolve, reject) => {
+                    if (this.props.status === ScriptStatus.SUCCESS) {
+                        resolve();
+                    }
+                    localForage.setItem('script', this.props.script)
+                        .then(resolve)
+                        .catch(reject);
+                })))
 
-                // Set the status to success if everything went okay
-                .then(() => {
-                    this.props.setStatus(ScriptStatus.SUCCESS);
-                })
+                    // Now execute the script
+                    .then(() => {
 
-                // Set the status to error and show a message if something went wrong
-                .catch(error => {
-                    this.props.setStatus(ScriptStatus.ERROR);
-                    showErrorToast(error.message)
-                })
+                        const [varnames, vars] = instance
+                            ? instanceVariables(instance, projections)
+                            : [[], []];
 
-                // Enable the editor
-                .finally(this._enableEditor);
+                        return this._runner
+                            .script(script)
+                            .libraries(libraries.toArray())
+                            .args('instance', s, 'width', 'height', ...varnames)
+                            .run(instance, stage, width, height, ...vars)
+                    })
 
-        } catch (error) {
+                    // Set the status to success if everything went okay
+                    .then(() => {
+                        this.props.setStatus(ScriptStatus.SUCCESS);
+                    })
 
-            showErrorToast(error.message);
-            this._enableEditor();
+                    // Set the status to error and show a message if something went wrong
+                    .catch(error => {
+                        this.props.setStatus(ScriptStatus.ERROR);
+                        showErrorToast(error.message)
+                    })
+
+                    // Enable the editor
+                    .finally(this._enableEditor);
+
+            } catch (error) {
+
+                showErrorToast(error.message);
+                this._enableEditor();
+
+            }
 
         }
 
@@ -189,6 +211,41 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
 
     };
 
+}
+
+function instanceVariables (instance: AlloyInstance, projections: Map<string, string>): [string[], any[]] {
+
+    const atoms = instance.atoms();
+    const projectAtoms: AlloyAtom[] = [];
+    projections.forEach(atomID => {
+        const atom = atoms.find(atom => atom.id() === atomID);
+        if (!atom)
+            throw Error(`Atom ${atomID} not in instance`);
+        projectAtoms.push(atom);
+    });
+
+    const _instance = instance.project(projectAtoms);
+    const _sigs = _instance.signatures();
+    const _atoms = _instance.atoms().filter(atom => isNaN(+atom.id()));
+    const _fields = _instance.fields();
+    const _skolems = _instance.skolems();
+
+    return [[
+        ..._sigs.map(varName),
+        ..._atoms.map(varName),
+        ..._fields.map(varName),
+        ..._skolems.map(varName)
+    ], [
+        ..._sigs,
+        ..._atoms,
+        ..._fields,
+        ..._skolems
+    ]];
+
+}
+
+function varName (item: any): string {
+    return Reflect.get(item, '__var__');
 }
 
 export default connector(ScriptStage);

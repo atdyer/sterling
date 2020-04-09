@@ -9,12 +9,14 @@ codemirror.defineSimpleMode('alloy', {
     start: [
         {regex: /--.*/, token: 'comment'},
         {regex: /\/\*/, token: 'comment', next: 'comment'},
+        {regex: /\/\/.*/, token: 'comment'},
         {regex: /\s+-?\b\d+\b/, token: 'number'},
         {regex: /(?:abstract|all|and|as|assert|but|check|disj|else|exactly|expect|extends|fact|for|fun|iden|iff|implies|in|Int|int|let|lone|module|no|none|not|one|open|or|pred|run|set|sig|some|sum|univ)\b/, token: "keyword"}
     ],
     comment: [
         {regex: /.*?\*\//, token: 'comment', next: 'start'},
-        {regex: /.*/, token: 'comment'}
+        {regex: /.*/, token: 'comment'},
+        {regex: /\/\/.*/, token: 'comment'}
     ],
     meta: {
         lineComment: '--'

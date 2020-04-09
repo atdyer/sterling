@@ -6,6 +6,7 @@ export const ScriptToaster = Toaster.create({
 });
 
 export function showErrorToast (message: React.ReactNode) {
+    console.error(message);
     ScriptToaster.show({
         intent: Intent.DANGER,
         message: message

@@ -138,10 +138,17 @@ const TableSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
 
 const ScriptSidebar: React.FunctionComponent<SterlingSidebarProps> = props => {
     return (
-        <SidebarButton active={props.scriptView === 'settings'}
-                       click={() => props.setScriptView('settings')}
-                       icon={'settings'}
-                       text={'Script Settings'}/>
+        <>
+            <SidebarButton active={props.scriptView === 'projections'}
+                           click={() => props.setScriptView('projections')}
+                           icon={'group-objects'}
+                           text={'Projections'}/>
+            <SidebarButton active={props.scriptView === 'variables'}
+                           click={() => props.setScriptView('variables')}
+                           icon={'variable'}
+                           text={'Script Variables'}/>
+        </>
+
     )
 };
 

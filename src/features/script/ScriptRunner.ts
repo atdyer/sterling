@@ -38,6 +38,7 @@ class ScriptRunner {
         const fn = new Function(
             ...this._args,
             ...this._libs.map(packageName),
+            'require',
             this._script
         );
 
@@ -46,7 +47,7 @@ class ScriptRunner {
                 return Promise
                     .all(this._libs.map(this._fetchLibrary.bind(this)))
                     .then(libs => {
-                        fn(...args, ...libs);
+                        fn(...args, ...libs, require);
                     });
             });
 
@@ -61,7 +62,7 @@ class ScriptRunner {
 
     private _fetchLibrary (library: string): Promise<any> {
 
-        const pkg = packageName(library);
+        const pkg = library;
 
         return this._libraries.has(pkg)
             ? Promise.resolve(this._libraries.get(pkg))
@@ -78,7 +79,7 @@ class ScriptRunner {
 }
 
 function packageName (library: string): string {
-    return library.split('@')[0];
+    return library.split('@')[0].replace('-', '');
 }
 
 export {
