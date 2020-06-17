@@ -22,7 +22,7 @@ export interface ScriptState {
     overlay: boolean
     projections: Map<string, string>
     script: string
-    stage: 'canvas' | 'svg'
+    stage: 'canvas' | 'svg' | 'div'
     status: ScriptStatus
     unprojected: List<string>
     width: number | null
@@ -36,10 +36,10 @@ const initialState: ScriptState = {
     collapseStageVariables: false,
     height: null,
     instance: null,
-    libraries: List(['d3']),
+    libraries: List(['d3', 'cytoscape']),
     overlay: true,
     projections: Map(),
-    stage: 'svg',
+    stage: 'div',
     script: '',
     status: ScriptStatus.PENDING,
     unprojected: List(),
@@ -114,7 +114,7 @@ const scriptSlice = createSlice({
             state.width = action.payload[0];
             state.height = action.payload[1];
         },
-        setStage (state, action: PayloadAction<'canvas'|'svg'>) {
+        setStage (state, action: PayloadAction<'canvas'|'svg'|'div'>) {
             if (action.payload !== state.stage) {
                 state.stage = action.payload;
                 state.status = ScriptStatus.PENDING;

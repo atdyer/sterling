@@ -44,12 +44,30 @@ class AlloySkolem extends AlloyTypedSet {
 
     }
 
+    static skolemsFromXML (instance: Element, sigIDs: Map<string, AlloySignature>, proxy?: AlloyProxy): AlloySkolem[] {
+
+        const skolems = Array.from(instance.querySelectorAll('skolem'));
+        return skolems.map(skolemElement => {
+
+            const label = skolemElement.getAttribute('label');
+            const types = AlloySignature.typesFromXML(skolemElement, sigIDs);
+            const tuples = AlloyTuple.tuplesFromXML(skolemElement.querySelectorAll('tuple'), types);
+
+            if (!label) throw AlloyError.missingAttribute('AlloySkolem', 'label');
+
+            return new AlloySkolem(label, types, tuples, proxy);
+
+        });
+
+    }
+
 }
 
 function varName (id: string): string {
     return id
-        .replace(/^this\//, '')
-        .replace('/', '$');
+        .replace(/^\$this\//, '$')
+        .replace('/', '$')
+        .replace(/'/g, '$');
 }
 
 export {

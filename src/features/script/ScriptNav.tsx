@@ -62,13 +62,17 @@ class ScriptNav extends React.Component<ScriptNavProps> {
                 <div className={'script-nav-right'}>
                     <ButtonGroup minimal={true}>
                         <Button
+                            active={this.props.stage === 'div'}
+                            onClick={() => this.props.setStage('div')}
+                            text={'<div>'}/>
+                        <Button
                             active={this.props.stage === 'canvas'}
                             onClick={() => this.props.setStage('canvas')}
-                            text={'Canvas'}/>
+                            text={'<canvas>'}/>
                         <Button
                             active={this.props.stage === 'svg'}
                             onClick={() => this.props.setStage('svg')}
-                            text={'SVG'}/>
+                            text={'<svg>'}/>
                     </ButtonGroup>
                 </div>
             </div>

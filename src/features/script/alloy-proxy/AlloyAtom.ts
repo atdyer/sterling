@@ -1,6 +1,11 @@
+import { AlloyError } from './AlloyError';
 import { AlloyProxy } from './AlloyProxy';
 import { AlloySet, AlloyTuple } from './AlloySet';
 
+/**
+ * In Alloy, an atom is a primitive entity that is indivisible, immutable, and
+ * uninterpreted.
+ */
 class AlloyAtom extends AlloySet {
 
     private readonly _id: string;
@@ -29,6 +34,14 @@ class AlloyAtom extends AlloySet {
     id (): string {
 
         return this._id;
+
+    }
+
+    static fromElement (element: Element, proxy?: AlloyProxy): AlloyAtom {
+
+        const label = element.getAttribute('label');
+        if (!label) throw AlloyError.missingAttribute('AlloyAtom', 'label');
+        return new AlloyAtom(label, proxy);
 
     }
 

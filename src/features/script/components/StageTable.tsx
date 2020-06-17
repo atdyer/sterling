@@ -53,6 +53,19 @@ class StageTable extends React.Component<StageTableProps> {
 
     }
 
+    private _divRow (): React.ReactNode {
+
+        return <tr>
+            <td>div</td>
+            <td>
+                <Link href={'https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div'}>
+                    {"<div>"}
+                </Link>
+            </td>
+        </tr>
+
+    }
+
     private _svgRow (): React.ReactNode {
 
         return <tr>
@@ -69,6 +82,7 @@ class StageTable extends React.Component<StageTableProps> {
     private _stageRow (): React.ReactNode {
 
         if (this.props.stage === 'canvas') return this._canvasRow();
+        if (this.props.stage === 'div') return this._divRow();
         if (this.props.stage === 'svg') return this._svgRow();
         return null;
 

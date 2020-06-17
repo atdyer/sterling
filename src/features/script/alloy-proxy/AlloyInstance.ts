@@ -1,3 +1,4 @@
+import { CytoscapeOptions, EdgeDefinition, NodeDefinition } from 'cytoscape';
 import { isDefined } from 'ts-is-present';
 import { AlloyAtom } from './AlloyAtom';
 import { AlloyError } from './AlloyError';
@@ -5,74 +6,88 @@ import { AlloyField } from './AlloyField';
 import { AlloyProxy } from './AlloyProxy';
 import { AlloySignature } from './AlloySignature';
 import { AlloySkolem } from './AlloySkolem';
-import { AlloyTuple } from './AlloySet';
 
+/**
+ * In Alloy, when you run a predicate or check an assertion, the analyzer
+ * searches for an _instance_ of an _analysis constraint_: an assignment of
+ * values to the variables of the constraint for which the constraint evaluates
+ * to true [[Jackson 2012](http://softwareabstractions.org/)].
+ */
 class AlloyInstance {
 
-    private readonly _proxy: AlloyProxy;
+    private _proxy: AlloyProxy;
 
     private _atoms: AlloyAtom[];
     private _fields: AlloyField[];
     private _signatures: AlloySignature[];
     private _skolems: AlloySkolem[];
 
+    private _projections: Map<AlloySignature, AlloyAtom>;
+
     private _bitwidth: number;
     private _command: string;
     private _filename: string;
+    private _sources: Map<string, string>;
 
-    constructor (text: string);
-    constructor (signatures: AlloySignature[],
-                 fields: AlloyField[],
-                 skolems: AlloySkolem[],
-                 bitwidth: number,
-                 command: string,
-                 filename: string,
-                 proxy?: AlloyProxy);
-    constructor (textOrSigs: string | AlloySignature[],
-                 fields?: AlloyField[],
-                 skolems?: AlloySkolem[],
-                 bitwidth?: number,
-                 command?: string,
-                 filename?: string,
-                 proxy?: AlloyProxy) {
+    /**
+     * Create a new Alloy instance. If no text is provided, an empty instance
+     * is created.
+     * @param text A string containing the XML output from an Alloy instance
+     */
+    constructor (text?: string) {
 
-        this._proxy = proxy || new AlloyProxy();
+        this._proxy = new AlloyProxy();
 
-        this._signatures = typeof textOrSigs === 'string' ? [] : textOrSigs;
-        this._atoms = typeof textOrSigs === 'string'
-            ? []
-            : textOrSigs.map(sig => sig.atoms()).reduce((acc, cur) => acc.concat(cur), []);
+        this._atoms = [];
+        this._fields = [];
+        this._signatures = [];
+        this._skolems = [];
 
-        this._fields = fields || [];
-        this._skolems = skolems || [];
+        this._projections = new Map();
 
-        this._bitwidth = bitwidth || 0;
-        this._command = command || '';
-        this._filename = filename || '';
+        this._bitwidth = 0;
+        this._command = '';
+        this._filename = '';
+        this._sources = new Map();
 
-        if (typeof textOrSigs === 'string')
-            this._buildFromXML(textOrSigs);
+        if (text)
+            this._buildFromXML(text);
 
     }
 
+    /**
+     * Get an atom by ID.
+     * @param id The atom ID
+     * @returns An atom or null if there is no atom with the specified ID
+     */
     atom (id: string): AlloyAtom | null {
 
         return this._atoms.find(atom => atom.id() === id) || null;
 
     }
 
+    /**
+     * Get an array of all atoms in the instance.
+     */
     atoms (): AlloyAtom[] {
 
         return this._atoms.slice();
 
     }
 
+    /**
+     * Get the bitwidth of the instance.
+     */
     bitwidth (): number {
 
         return this._bitwidth;
 
     }
 
+    /**
+     * Generate a deep clone of the instance.
+     * @throws Error if the instance does not have a univ signature.
+     */
     clone (): AlloyInstance {
 
         const proxy = new AlloyProxy();
@@ -83,45 +98,73 @@ class AlloyInstance {
         const univClone = univ.clone(proxy);
 
         const signatures = [univClone, ...univClone.subSignatures(true)];
+        const atoms = univClone.atoms(true);
         const fields = this.fields().map(field => field.clone(signatures, proxy));
         const skolems = this.skolems().map(skolem => skolem.clone(signatures, proxy));
 
-        return new AlloyInstance(
-            signatures,
-            fields,
-            skolems,
-            this.bitwidth(),
-            this.command(),
-            this.filename(),
-            proxy
-        );
+        const instance = new AlloyInstance();
+
+        instance._proxy = proxy;
+
+        instance._fields = fields;
+        instance._signatures = signatures;
+        instance._atoms = atoms;
+        instance._skolems = skolems;
+
+        instance._bitwidth = this.bitwidth();
+        instance._command = this.command();
+        instance._filename = this.filename();
+
+        return instance;
 
     }
 
+    /**
+     * Get the command used to generate the instance.
+     */
     command (): string {
 
         return this._command;
 
     }
 
+    /**
+     * Get a field by ID.
+     * @param id The field ID
+     * @returns A field or null if there is no field with the specified ID
+     */
     field (id: string): AlloyField | null {
 
         return this._fields.find(field => field.id() === id) || null;
 
     }
 
+    /**
+     * Get an array of all fields in the instance.
+     */
     fields (): AlloyField[] {
 
         return this._fields;
 
     }
 
+    /**
+     * Get the full path of the model used to generate the instance.
+     */
     filename (): string {
 
         return this._filename;
 
     }
 
+    /**
+     * Project the instance over the specified atoms. There may be a maximum of
+     * one atom per signature that is a direct descendant of the univ signature.
+     * @param atoms The list of atoms over which to project the instance.
+     * @returns A clone of the instance with the projection applied.
+     * @throws Error if there is more than one atom provided for any signature
+     * that is a direct descendant of the univ signature.
+     */
     project (atoms: AlloyAtom[]): AlloyInstance {
 
         // Create clone and find same atoms
@@ -135,42 +178,196 @@ class AlloyInstance {
         if (!univ) throw AlloyError.error('AlloyInstance', 'No univ signature');
 
         const allowableSigs = univ.subSignatures();
-        const sigAtoms = new Map<AlloySignature, AlloyAtom>();
+        const projections = new Map<AlloySignature, AlloyAtom>();
         _atoms.forEach(atom => {
             allowableSigs.forEach(signature => {
                 if (signature.atoms(true).includes(atom!)) {
-                    if (sigAtoms.has(signature))
+                    if (projections.has(signature))
                         throw AlloyError.error('AlloyInstance', 'Cannot project over multiple atoms from the same signature');
-                    sigAtoms.set(signature, atom!);
+                    projections.set(signature, atom!);
                 }
             });
         });
 
         // Do projection
-        _instance.fields().forEach(field => field.project(sigAtoms));
-        _instance.skolems().forEach(skolem => skolem.project(sigAtoms));
+        this._projections = projections;
+        _instance.fields().forEach(field => field.project(projections));
+        _instance.skolems().forEach(skolem => skolem.project(projections));
         return _instance;
 
     }
 
+    /**
+     * Get the currently projected atoms.
+     * @returns A Map object with key-value pairs mapping signatures to projected atoms
+     */
+    projections (): Map<AlloySignature, AlloyAtom> {
+
+        return new Map(this._projections);
+
+    }
+
+    /**
+     * Get a signature by ID
+     * @param id The signature ID
+     * @returns A signature or null if there is no signature with the specified ID
+     */
     signature (id: string): AlloySignature | null {
 
         return this.signatures().find(sig => sig.id() === id) || null;
 
     }
 
+    /**
+     * Get an array of all signatures in the instance.
+     */
     signatures (): AlloySignature[] {
 
         return this._signatures.slice();
 
     }
 
+    /**
+     * Get a skolem by ID
+     * @param id The skolem ID
+     * @returns A skolem or null if there is no skolem with the specified ID
+     */
+    skolem (id: string): AlloySkolem | null {
+
+        return this.skolems().find(skolem => skolem.id() === id) || null;
+
+    }
+
+    /**
+     * Get an array of all skolems in the instance.
+     */
     skolems (): AlloySkolem[] {
 
         return this._skolems.slice();
 
     }
 
+    /**
+     * Get all source files that define the model from which this instance was created.
+     * @returns A Map object with key-value pairs mapping full path names to file contents
+     */
+    sources (): Map<string, string>{
+
+        return new Map(this._sources);
+
+    }
+
+    toCytoscape (compound: boolean = false): CytoscapeOptions {
+
+        const connected = new Set<string>();
+
+        this.fields().forEach(field => {
+            field.tuples().forEach(tuple => {
+                tuple.atoms().forEach(atom => {
+                    connected.add(atom.id());
+                });
+            });
+        });
+
+        let nodes: NodeDefinition[] = [];
+
+        if (compound) {
+
+            const univ = this.univ();
+            if (univ) tonode(univ);
+
+        } else {
+
+            nodes = this.atoms()
+                .filter(atom => connected.has(atom.id()))
+                .map(atom => {
+                    return  {
+                        data: {
+                            id: atom.id()
+                        }
+                    };
+                });
+
+        }
+
+        const edges: EdgeDefinition[] = this.fields().map(field => {
+            return field.tuples().map(tuple => {
+                const atoms = tuple.atoms();
+                const first = atoms[0];
+                const last = atoms[atoms.length - 1];
+                const middle = atoms.slice(1, -1);
+                return {
+                    data: {
+                        id: field.id() + tuple.toString(),
+                        source: first.id(),
+                        target: last.id(),
+                        label: field.id() + (middle.length
+                            ? `[${middle.map(atom => atom.id()).join(',')}]`
+                            : '')
+                    }
+                }
+            });
+        }).reduce((acc, cur) => acc.concat(cur), []);
+
+        return {
+            elements: {
+                nodes: nodes,
+                edges: edges
+            },
+            style: [
+                {
+                    selector: 'node',
+                    style: {
+                        label: 'data(id)'
+                    }
+                },
+                {
+                    selector: 'edge',
+                    style: {
+                        'label': 'data(label)',
+                        'curve-style': 'bezier',
+                        'target-arrow-shape': 'triangle'
+                    }
+                }
+            ]
+        };
+
+        function tonode (signature: AlloySignature, parent?: AlloySignature) {
+
+            const include = signature.atoms(true).some(atom => connected.has(atom.id()));
+
+            if (include) {
+
+                nodes.push({
+                    data: {
+                        id: signature.id(),
+                        parent: parent ? parent.id() : undefined
+                    }
+                });
+
+                signature.atoms()
+                    .filter(atom => connected.has(atom.id()))
+                    .forEach(atom => {
+                        nodes.push({
+                            data: {
+                                id: atom.id(),
+                                parent: signature.id()
+                            }
+                        });
+                    });
+
+                signature.subSignatures().forEach(sig => tonode(sig, signature));
+
+            }
+
+        }
+
+    }
+
+    /**
+     * Get the univ signature.
+     * @returns The univ signature if it exists, null if it does not
+     */
     univ (): AlloySignature | null {
 
         return this._signatures.find(sig => sig.id() === 'univ') || null;
@@ -206,191 +403,26 @@ class AlloyInstance {
         this._signatures = [];
         this._skolems = [];
 
-        const sigIds = this._xmlBuildSigsAndAtoms(instance);
-        this._xmlBuildFieldsAndSkolems(instance, sigIds);
+        const sigIDs = AlloySignature.signaturesFromXML(instance, this._proxy);
 
-    }
+        this._signatures = Array.from(sigIDs.values());
+        this._fields = AlloyField.fieldsFromXML(instance, sigIDs, this._proxy);
+        this._skolems = AlloySkolem.skolemsFromXML(instance, sigIDs, this._proxy);
+        this._atoms = this._signatures
+            .map(sig => sig.atoms())
+            .reduce((acc, cur) => acc.concat(cur), []);
 
-    private _xmlBuildSigsAndAtoms (instance: Element): Map<string, AlloySignature> {
-
-        this._atoms = [];
-        this._signatures = [];
-        const signatures = Array.from(instance.querySelectorAll('sig'));
-        const sigIds = new Map<string, AlloySignature>();
-        const sigChildren = new Map<string, string[]>();
-
-        // Build int signature
-        const intAtoms: AlloyAtom[] = [];
-        for (let n = 2 ** this._bitwidth, i = -n / 2; i < n / 2; ++i) {
-            const atom = new AlloyAtom(i.toString(), this._proxy);
-            this._atoms.push(atom);
-            intAtoms.push(atom);
-        }
-        const intSig = new AlloySignature('Int', intAtoms, this._proxy);
-
-        // Build all signatures and atoms except for int and seq/int
-        this._signatures = signatures
-            .filter(filterSeqInt)
-            .map(sigEl => {
-
-                const atoms = Array.from(sigEl.querySelectorAll('atom')).map(atomEl => {
-
-                    const label = atomEl.getAttribute('label');
-                    if (!label) throw AlloyError.missingAttribute('AlloyAtom', 'label');
-                    const atom = new AlloyAtom(label, this._proxy);
-                    this._atoms.push(atom);
-                    return atom;
-
-                });
-
-                const id = sigEl.getAttribute('ID');
-                const parent = sigEl.getAttribute('parentID');
-                const label = sigEl.getAttribute('label');
-
-                if (!id) throw AlloyError.missingAttribute('AlloySignature', 'ID');
-                if (!label) throw AlloyError.missingAttribute('AlloySignature', 'label');
-                if (!parent && label !== 'univ') AlloyError.missingAttribute('AlloySignature', 'parentID');
-
-                const signature = label === 'Int'
-                    ? intSig
-                    : new AlloySignature(label, atoms, this._proxy);
-
-                sigIds.set(id, signature);
-
-                if (parent) {
-                    if (!sigChildren.has(parent))
-                        sigChildren.set(parent, []);
-                    sigChildren.get(parent)!.push(id);
-                }
-
-                return signature;
-
-            });
-
-        // Build signature tree
-        sigIds.forEach((signature, id) => {
-
-            const childIDs = sigChildren.get(id) || [];
-            const children = childIDs
-                .map(id => sigIds.get(id))
-                .filter(isDefined);
-
-            signature.subSignatures(children);
-
-        });
-
-        return sigIds;
-
-    }
-
-    private _xmlBuildFieldsAndSkolems (instance: Element, sigIds: Map<string, AlloySignature>) {
-
-        // Count number of each field name
-        const fields = Array.from(instance.querySelectorAll('field'));
-        const fieldVarCount = new Map<string, number>();
-        fields.forEach(fldEl => {
-
-            const label = fldEl.getAttribute('label');
-            if (!label) throw AlloyError.missingAttribute('AlloyField', 'label');
-            fieldVarCount.set(label, (fieldVarCount.get(label) || 0) + 1);
-
-        });
-
-        // Create a function that can be used to build a list of tuples
-        const tuples = (elements: NodeListOf<Element>): AlloyTuple[] => {
-
-            return Array.from(elements).map(tupEl => {
-
-                const atoms = Array.from(tupEl.querySelectorAll('atom')).map(atomEl => {
-
-                    const atomLabel = atomEl.getAttribute('label');
-                    if (!atomLabel) throw AlloyError.missingAttribute('AlloyAtom', 'label');
-                    const atom = this.atom(atomLabel);
-                    if (!atom) throw AlloyError.error('AlloyInstance', `No atom: ${atomLabel}`);
-                    return atom;
-
-                });
-
-                return new AlloyTuple(atoms);
-
-            })
-
-        };
-
-        // Build fields
-        this._fields = fields.map(fldEl => {
-
-            const label = fldEl.getAttribute('label');
-            const parentID = fldEl.getAttribute('parentID');
-            const types = fldEl.querySelector('types');
-            if (!label) throw AlloyError.missingAttribute('AlloyField', 'label');
-            if (!parentID) throw AlloyError.missingAttribute('AlloyField', 'parentID');
-            if (!types) throw AlloyError.missingElement('AlloyField', 'types');
-
-            const count = fieldVarCount.get(label)!;
-            const parent = sigIds.get(parentID);
-            const typesigs = Array.from(types.querySelectorAll('type')).map(type => {
-                const typeID = type.getAttribute('ID');
-                if (!typeID) throw AlloyError.missingAttribute('AlloyField', 'ID');
-                const sig = sigIds.get(typeID);
-                if (!sig) throw AlloyError.error('AlloyField', `Signature doesn't exist: ${typeID}`);
-                return sig;
-            });
-
-            if (parent === undefined)
-                throw AlloyError.error('AlloyField', 'Field parent type does not exist');
-
-            const varName = count > 1
-                ? multiFieldName(label, parent)
-                : label;
-
-            return new AlloyField(
-                label,
-                typesigs,
-                tuples(fldEl.querySelectorAll('tuple')),
-                this._proxy,
-                varName
-            );
-
-        });
-
-        // Build skolems
-        const skolems = Array.from(instance.querySelectorAll('skolem'));
-        this._skolems = skolems.map(skolEl => {
-
-            const label = skolEl.getAttribute('label');
-            const types = skolEl.querySelector('types');
-            if (!label) throw AlloyError.missingAttribute('AlloySkolem', 'label');
-            if (!types) throw AlloyError.missingElement('AlloySkolem', 'types');
-
-            const typesigs = Array.from(types.querySelectorAll('type')).map(type => {
-                const typeID = type.getAttribute('ID');
-                if (!typeID) throw AlloyError.missingAttribute('AlloySkolem', 'ID');
-                const sig = sigIds.get(typeID);
-                if (!sig) throw AlloyError.error('AlloySkolem', `Signature does not exist: ${typeID}`);
-                return sig;
-            });
-
-            return new AlloySkolem(
-                label,
-                typesigs,
-                tuples(skolEl.querySelectorAll('tuple')),
-                this._proxy
-            );
-
+        this._sources = new Map();
+        Array.from(document.querySelectorAll('source')).forEach(element => {
+            const filename = element.getAttribute('filename');
+            const source = element.getAttribute('content');
+            if (!filename) throw AlloyError.missingAttribute('AlloyInstance', 'filename');
+            if (!source) throw AlloyError.missingAttribute('AlloyInstance', 'content');
+            this._sources.set(filename, source);
         });
 
     }
 
-}
-
-function filterSeqInt (element: Element): boolean {
-    const label = element.getAttribute('label');
-    return !!label && label !== 'seq/Int';
-}
-
-function multiFieldName (field: string, signature: AlloySignature): string {
-    return `${Reflect.get(signature, '__var__')}$${field}`;
 }
 
 export {

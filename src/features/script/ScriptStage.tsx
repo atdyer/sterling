@@ -35,6 +35,7 @@ interface ScriptStageState {
 class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
 
     private readonly _canvas: React.RefObject<HTMLCanvasElement>;
+    private readonly _div: React.RefObject<HTMLDivElement>;
     private readonly _svg: React.RefObject<SVGSVGElement>;
     private readonly _runner: ScriptRunner;
 
@@ -43,6 +44,7 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
         super(props);
 
         this._canvas = React.createRef();
+        this._div = React.createRef();
         this._svg = React.createRef();
         this._runner = new ScriptRunner();
 
@@ -98,9 +100,13 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
                                 ? <canvas
                                     className={'script-stage'}
                                     ref={this._canvas}/>
-                                : <svg
+                                : this.props.stage === 'svg'
+                                ? <svg
                                     className={'script-stage'}
                                     ref={this._svg}/>
+                                : <div
+                                    className={'script-stage'}
+                                    ref={this._div}/>
                         }
                         {
                             this.props.overlay && <ScriptOverlay/>
@@ -134,7 +140,9 @@ class ScriptStage extends React.Component<ScriptStageProps, ScriptStageState> {
         const projections = new Map(this.props.projections.toKeyedSeq());
         const stage = s === 'canvas'
             ? this._canvas.current
-            : this._svg.current;
+            : s === 'svg'
+                ? this._svg.current
+                : this._div.current;
         const libraries = this.props.libraries;
 
         let width = this.props.width;
